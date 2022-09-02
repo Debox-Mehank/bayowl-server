@@ -1,0 +1,37 @@
+{
+  "name": "bayowl-server",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "author": "Yash Kakade",
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "rimraf ./dist && tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+  },
+  "dependencies": {
+    "@graphql-tools/schema": "^8.5.0",
+    "@typegoose/typegoose": "^9.8.1",
+    "apollo-server-express": "^3.9.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.0",
+    "graphql": "15.x",
+    "joi": "^17.6.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.3",
+    "mongoose": "^6.3.2",
+    "mongoose-autopopulate": "^0.16.1",
+    "reflect-metadata": "^0.1.13",
+    "type-graphql": "^1.1.1",
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/lodash": "^4.14.182",
+    "rimraf": "^3.0.2",
+    "ts-node-dev": "^1.1.8"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
