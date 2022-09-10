@@ -1,13 +1,11 @@
-// import { Request, Response } from "express";
-// import { Admin } from "../modules/admin/schema/admin.schema";
-// import { User } from "../modules/user/schema/user.schema";
+import { Request, Response } from "express";
+import { Admin } from "../module/admin/schema/admin.schema";
 
-// interface Context {
-//   req?: Request;
-//   res?: Response;
-//   user: string | undefined;
-//   role: Admin["type"] | User["type"] | undefined;
-//   accountId: string | undefined;
-// }
+interface Context {
+  req?: Request;
+  res?: Response;
+  role: Admin["type"] | "user" | undefined;
+  user: string | undefined;
+}
 
-// export default Context;
+export default Context;

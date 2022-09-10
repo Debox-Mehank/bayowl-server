@@ -13,8 +13,8 @@ class AddOn {
   @prop({ required: true, trim: true })
   type: string;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
   value: number;
 }
 
@@ -26,88 +26,92 @@ export class Services {
 
   @Field(() => String, { nullable: false })
   @prop({ required: true, trim: true })
-  serviceCategory: string;
+  mainCategory: string;
+
+  @Field(() => String, { nullable: false })
+  @prop({ required: true, trim: true })
+  subCategory: string;
 
   @Field(() => String, { nullable: false })
   @prop({ required: true, trim: true })
   serviceName: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   subService: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
-  subSubService: string;
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
+  subService2: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   for: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   description: string;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, {
+    nullable: true,
+  })
+  @prop({ default: null })
   estimatedTime: number;
 
   @Field(() => Number, { nullable: false })
   @prop({ required: true })
   price: number;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
-  inputLimit: number;
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
+  inputTrackLimit: number;
 
-  //
+  @Field(() => [String], { description: "File formats for uploading file" })
+  @prop({ required: true, default: [], type: String })
+  uploadFileFormat: mongoose.Types.Array<string>;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
-  fileFormat: string;
+  @Field(() => [String], { description: "File formats for delivery file" })
+  @prop({ required: true, default: [], type: String })
+  deliveryFileFormat: mongoose.Types.Array<string>;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
-  deliveryFormat: string;
-
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
   deliveryDays: number;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
-  maxDuration: number;
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
+  maxFileDuration: number;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
   numberOfReferenceFileUploads: number;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
   setOfRevisions: number;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
   revisionsDelivery: number;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   mixVocalTuning: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   mixProcessingReverbs: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   mixProcessingDelays: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
   mixProcessingOtherFx: string;
 
   @Field(() => [AddOn], { nullable: false })
-  @prop()
+  @prop({ default: [] })
   addOn: mongoose.Types.Array<AddOn>;
 
   @Field(() => Date)

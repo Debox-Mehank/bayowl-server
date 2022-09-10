@@ -9,9 +9,9 @@ import {
 } from "apollo-server-core";
 import { resolvers as typedResolvers } from "../resolvers/index.resolver";
 import { makeExecutableSchema } from "@graphql-tools/schema";
-// import Context from "../interface/context";
-// import { verifyJwt } from "./auth";
-// import { TokenType } from "../interface/jwt";
+import Context from "../interface/context";
+import { verifyJwt } from "./auth";
+import { TokenType } from "../interface/jwt";
 import { GraphQLError } from "graphql";
 
 const apolloServerConfig = async (httpServer: Server, app: Application) => {
@@ -31,16 +31,15 @@ const apolloServerConfig = async (httpServer: Server, app: Application) => {
       return new Error(err.message);
     },
 
-    // context: (ctx: Context) => {
-    //   const context = ctx;
-    //   if (context.req?.cookies.accessToken) {
-    //     const user = verifyJwt<TokenType>(ctx.req?.cookies.accessToken);
-    //     context.user = user?.user;
-    //     context.role = user?.role;
-    //     context.accountId = user?.accountId;
-    //   }
-    //   return context;
-    // },
+    context: (ctx: Context) => {
+      const context = ctx;
+      if (context.req?.cookies.accessToken) {
+        const user = verifyJwt<TokenType>(ctx.req?.cookies.accessToken);
+        context.user = user?.user;
+        context.role = user?.role;
+      }
+      return context;
+    },
     plugins: [
       process.env.NODE_ENV === "production"
         ? ApolloServerPluginLandingPageProductionDefault({

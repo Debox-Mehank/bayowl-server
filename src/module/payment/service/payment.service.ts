@@ -1,0 +1,130 @@
+import { mongoose } from "@typegoose/typegoose";
+import { ApolloError } from "apollo-server-express";
+import crypto from "crypto";
+import Razorpay from "razorpay";
+import Context from "../../../interface/context";
+import { sendUserVerificationEmail } from "../../../mails";
+import { UserServicesInput } from "../../user/interface/user.interface";
+import { UserModel } from "../../user/schema/user.schema";
+import { PaymentModel } from "../schema/payment.schema";
+
+class PaymentService {
+  async initiatePayment(
+    ctx: Context,
+    service: UserServicesInput,
+    email?: string
+  ) {
+    if (!service) {
+      throw new ApolloError("Something went wrong, please try again later");
+    }
+    // Create rp instance
+    const instance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
+    // Flow 1 where new user is buying service without creating account
+    if (!ctx.user && email) {
+      try {
+        const alreadyRegistered = await UserModel.findOne({ email: email })
+          .lean()
+          .select("_id");
+        if (alreadyRegistered) {
+          throw new ApolloError(
+            "Please complete your pending payment before buying new service"
+          );
+        }
+        const createdUser = await UserModel.create({ email: email });
+
+        const finalService = { _id: new mongoose.Types.ObjectId(), ...service };
+
+        await UserModel.findOneAndUpdate(
+          { _id: createdUser._id },
+          {
+            $addToSet: {
+              services: finalService,
+            },
+          }
+        );
+
+        // send verify mail
+        await sendUserVerificationEmail({
+          email: email,
+          userId: createdUser._id,
+        });
+
+        await PaymentModel.create({
+          email: email,
+          userServiceId: finalService._id,
+          amount: finalService.price,
+          status: "pending email verification",
+          // paymentLinkId: paylink.id,
+        });
+
+        return "Payment link sent to user";
+      } catch (error: any) {
+        console.error("ERROR_INITPAYMENT : " + error.toString());
+        throw new ApolloError(error);
+      }
+    }
+    // Flow 2 where logged in user is buying the service
+    else if (ctx.user) {
+      // Create order options
+      const options = {
+        amount: service.price * 100,
+        currency: "INR",
+        receipt: crypto.randomBytes(10).toString("hex"),
+      };
+      try {
+        // Create order
+        const order = await instance.orders.create(options);
+        if (!order)
+          throw new ApolloError("Something went wrong, please try again later");
+
+        const finalService = { _id: new mongoose.Types.ObjectId(), ...service };
+
+        await UserModel.findOneAndUpdate(
+          { _id: ctx.user },
+          {
+            $addToSet: {
+              services: finalService,
+            },
+          }
+        );
+
+        await PaymentModel.create({
+          email: ctx.user,
+          userServiceId: finalService._id,
+          amount: finalService.price,
+          status: "created",
+          orderId: order.id,
+        });
+
+        return JSON.stringify(order);
+      } catch (error: any) {
+        console.error("ERROR_INITPAYMENT : " + error.toString());
+        throw new ApolloError(error);
+      }
+    } else {
+      throw new ApolloError("Something went wrong, please try again later");
+    }
+  }
+
+  async verifyPayment(
+    ctx: Context,
+    orderId: string,
+    paymentId: string,
+    signature: string
+  ) {
+    const sign = `${orderId}|${paymentId}`;
+    const expectedSign = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(sign.toString())
+      .digest("hex");
+
+    if (signature === expectedSign) {
+    }
+  }
+}
+
+export default PaymentService;
