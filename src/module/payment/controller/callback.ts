@@ -79,8 +79,6 @@ export const paymentCallbackHandler = async (req: Request, res: Response) => {
 
   const body = razorpay_order_id + "|" + razorpay_payment_id;
 
-  console.log(body);
-
   const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
     .update(body.toString())

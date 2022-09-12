@@ -4,6 +4,7 @@ import crypto from "crypto";
 import Razorpay from "razorpay";
 import Context from "../../../interface/context";
 import { sendUserVerificationEmail } from "../../../mails";
+import { getUserEmail } from "../../user/helper";
 import { UserServicesInput } from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
 import { PaymentModel } from "../schema/payment.schema";
@@ -69,6 +70,9 @@ class PaymentService {
     }
     // Flow 2 where logged in user is buying the service
     else if (ctx.user) {
+      // get email
+      const email = await getUserEmail(ctx.user);
+
       // Create order options
       const options = {
         amount: service.price * 100,
@@ -93,7 +97,7 @@ class PaymentService {
         );
 
         await PaymentModel.create({
-          email: ctx.user,
+          email: email?.email,
           userServiceId: finalService._id,
           amount: finalService.price,
           status: "created",

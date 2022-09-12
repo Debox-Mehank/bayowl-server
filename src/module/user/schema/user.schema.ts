@@ -31,7 +31,14 @@ export class User {
   email: string;
 
   @Field(() => String, { nullable: true })
-  @prop({ trim: true, unique: true, default: null })
+  @prop({
+    trim: true,
+    index: {
+      unique: true,
+      partialFilterExpression: { companyName: { $type: "string" } },
+    },
+    default: null,
+  })
   number: string;
 
   @prop({ default: 0 })
