@@ -14,6 +14,7 @@ import { OAuth2Client } from "google-auth-library";
 import { sendUserVerificationEmail } from "../../../mails";
 import { VerificationTokenType } from "../../../interface/jwt";
 import { PaymentModel } from "../../payment/schema/payment.schema";
+import { UserServices } from "../interface/user.interface";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
@@ -510,6 +511,29 @@ class UserService {
       console.log("error in updating project name - " + error.toString());
       throw new ApolloError(error.toString());
     }
+  }
+
+  async getServiceDetails(
+    serviceId: string,
+    ctx: Context
+  ): Promise<UserServices | null> {
+    const services = await UserModel.findOne({ _id: ctx.user }).select(
+      "services"
+    );
+
+    if (!services) {
+      return null;
+    }
+
+    const service = services.services.find(
+      (el) => el._id.toString() === serviceId
+    );
+
+    if (!service) {
+      return null;
+    }
+
+    return service;
   }
 }
 

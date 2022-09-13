@@ -1,6 +1,7 @@
 import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import Context from "../../../interface/context";
 import { isAuth } from "../../../middleware/auth";
+import { UserServices } from "../interface/user.interface";
 import { User } from "../schema/user.schema";
 import UserService from "../service/user.service";
 
@@ -93,5 +94,14 @@ export default class UserResolver {
     @Ctx() context: Context
   ): Promise<Boolean> {
     return this.service.updatePorjectName(projectName, serviceId, context);
+  }
+
+  @Query(() => UserServices, { nullable: true })
+  @UseMiddleware([isAuth])
+  getUserServiceDetailsById(
+    @Arg("serviceId") serviceId: string,
+    @Ctx() context: Context
+  ): Promise<UserServices | null> {
+    return this.service.getServiceDetails(serviceId, context);
   }
 }
