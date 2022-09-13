@@ -465,6 +465,52 @@ class UserService {
       throw new ApolloError(error as string);
     }
   }
+
+  async updatePorjectName(
+    projectName: string,
+    serviceId: string,
+    context: Context
+  ) {
+    if (!projectName || !serviceId || !context.user) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    try {
+      const find = await UserModel.findOne({
+        _id: context.user,
+        services: {
+          $elemMatch: {
+            _id: serviceId,
+            projectName: null,
+          },
+        },
+      })
+        .lean()
+        .select("_id");
+
+      if (!find) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
+      await UserModel.updateOne(
+        {
+          _id: context.user,
+          services: {
+            $elemMatch: {
+              _id: serviceId,
+              projectName: null,
+            },
+          },
+        },
+        { $set: { "services.$.projectName": projectName } }
+      );
+
+      return true;
+    } catch (error: any) {
+      console.log("error in updating project name - " + error.toString());
+      throw new ApolloError(error.toString());
+    }
+  }
 }
 
 export default UserService;

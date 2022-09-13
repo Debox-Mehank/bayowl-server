@@ -84,5 +84,14 @@ export default class UserResolver {
   verifyUser(@Arg("token") token: string): Promise<Boolean> {
     return this.service.verifyEmail(token);
   }
-  // User payment
+  // User update project name
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth])
+  updatePorjectName(
+    @Arg("projectName") projectName: string,
+    @Arg("serviceId") serviceId: string,
+    @Ctx() context: Context
+  ): Promise<Boolean> {
+    return this.service.updatePorjectName(projectName, serviceId, context);
+  }
 }

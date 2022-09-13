@@ -29,7 +29,7 @@ export default class ServicesResolver {
   }
 
   @Query(() => [Services])
-  @UseMiddleware([isAdmin])
+  // @UseMiddleware([isAdmin])
   getAllService() {
     return this.service.getAllService();
   }
