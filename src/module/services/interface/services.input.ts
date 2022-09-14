@@ -7,6 +7,9 @@ class AddOnInput {
 
   @Field(() => Number, { nullable: true })
   value: number;
+
+  @Field(() => Number, { nullable: true })
+  qty: number;
 }
 
 @InputType()

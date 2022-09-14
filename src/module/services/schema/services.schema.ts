@@ -16,6 +16,10 @@ class AddOn {
   @Field(() => Number, { nullable: true })
   @prop({ default: null })
   value: number;
+
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
+  qty: number;
 }
 
 @ObjectType()
