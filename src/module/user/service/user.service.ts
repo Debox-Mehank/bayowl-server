@@ -2,6 +2,9 @@ import { ApolloError } from "apollo-server-express";
 import Joi from "joi";
 import Razorpay from "razorpay";
 import bcrypt from "bcrypt";
+import aws from "aws-sdk";
+import crypto from "crypto";
+import { promisify } from "util";
 import Context from "../../../interface/context";
 import { signJwt, verifyJwt } from "../../../utils/auth";
 import {
@@ -20,6 +23,7 @@ const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 });
+const randomBytes = promisify(crypto.randomBytes);
 
 class UserService {
   async login(
@@ -534,6 +538,67 @@ class UserService {
     }
 
     return service;
+  }
+
+  async getS3SignedURL(): Promise<string> {
+    const region = "ap-south-1";
+    const bucketName = "bayowl-online-services";
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
+
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+
+    const rawBytes = await randomBytes(16);
+    const imageName = rawBytes.toString("hex");
+
+    const params = {
+      Bucket: bucketName,
+      Key: imageName,
+      Expires: 60,
+    };
+
+    const uploadURL = await s3.getSignedUrlPromise("putObject", params);
+
+    return uploadURL;
+  }
+
+  async uploadFilesForService(
+    ctx: Context,
+    serviceId: string,
+    uplodedFiles: string[],
+    referenceUploadedFiles?: string[]
+  ): Promise<boolean> {
+    // Check if reference urls there or not
+    // Update the status from pending upload to under review
+    // Send mails accordingly
+
+    if (!ctx.user || !serviceId || uplodedFiles.length <= 0) {
+      throw new ApolloError("Something went wrong, try again later.");
+    }
+
+    await UserModel.updateOne(
+      {
+        _id: ctx.user,
+        services: {
+          $elemMatch: {
+            _id: serviceId,
+          },
+        },
+      },
+      {
+        $set: {
+          "services.$.uploadedFiles": uplodedFiles,
+          "services.$.referenceFiles": referenceUploadedFiles ?? [],
+        },
+      }
+    );
+
+    return true;
   }
 }
 

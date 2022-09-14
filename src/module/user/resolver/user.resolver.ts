@@ -104,4 +104,27 @@ export default class UserResolver {
   ): Promise<UserServices | null> {
     return this.service.getServiceDetails(serviceId, context);
   }
+
+  @Query(() => String)
+  @UseMiddleware([isAuth])
+  getS3SignedURL(): Promise<string> {
+    return this.service.getS3SignedURL();
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth])
+  uploadFilesForService(
+    @Ctx() context: Context,
+    @Arg("serviceId") serviceId: string,
+    @Arg("uplodedFiles", () => [String]) uplodedFiles: string[],
+    @Arg("referenceUploadedFiles", () => [String])
+    referenceUploadedFiles?: string[]
+  ): Promise<boolean> {
+    return this.service.uploadFilesForService(
+      context,
+      serviceId,
+      uplodedFiles,
+      referenceUploadedFiles
+    );
+  }
 }
