@@ -1,7 +1,12 @@
 import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import Context from "../../../interface/context";
 import { isAuth } from "../../../middleware/auth";
-import { UserServices } from "../interface/user.interface";
+import {
+  FileUploadResponse,
+  FinalMultipartUploadInput,
+  MultipartSignedUrlResponse,
+  UserServices,
+} from "../interface/user.interface";
 import { User } from "../schema/user.schema";
 import UserService from "../service/user.service";
 
@@ -105,10 +110,36 @@ export default class UserResolver {
     return this.service.getServiceDetails(serviceId, context);
   }
 
+  @Query(() => FileUploadResponse)
+  @UseMiddleware([isAuth])
+  initFileUpload(
+    @Arg("fileName") fileName: string
+  ): Promise<FileUploadResponse> {
+    return this.service.initFileUpload(fileName);
+  }
+
+  @Query(() => [MultipartSignedUrlResponse])
+  @UseMiddleware([isAuth])
+  getMultipartPreSignedUrls(
+    @Arg("fileId") fileId: string,
+    @Arg("fileKey") fileKey: string,
+    @Arg("parts") parts: number
+  ): Promise<MultipartSignedUrlResponse[]> {
+    return this.service.getMultipartPreSignedUrls(fileId, fileKey, parts);
+  }
+
+  @Query(() => String, { nullable: true })
+  @UseMiddleware([isAuth])
+  finalizeMultipartUpload(
+    @Arg("input") input: FinalMultipartUploadInput
+  ): Promise<String | undefined> {
+    return this.service.finalizeMultipartUpload(input);
+  }
+
   @Query(() => String)
   @UseMiddleware([isAuth])
-  getS3SignedURL(): Promise<string> {
-    return this.service.getS3SignedURL();
+  getS3SignedURL(@Arg("fileName") fileName: string): Promise<string> {
+    return this.service.getS3SignedURL(fileName);
   }
 
   @Query(() => Boolean)

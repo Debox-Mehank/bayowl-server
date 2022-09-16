@@ -17,13 +17,24 @@ import { OAuth2Client } from "google-auth-library";
 import { sendUserVerificationEmail } from "../../../mails";
 import { VerificationTokenType } from "../../../interface/jwt";
 import { PaymentModel } from "../../payment/schema/payment.schema";
-import { UserServices } from "../interface/user.interface";
+import {
+  FileUploadResponse,
+  FinalMultipartUploadInput,
+  MultipartSignedUrlResponse,
+  UserServices,
+} from "../interface/user.interface";
+import _ from "lodash";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 });
 const randomBytes = promisify(crypto.randomBytes);
+
+const region = "ap-south-1";
+const bucketName = "bayowl-online-services";
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
 
 class UserService {
   async login(
@@ -540,12 +551,93 @@ class UserService {
     return service;
   }
 
-  async getS3SignedURL(): Promise<string> {
-    const region = "ap-south-1";
-    const bucketName = "bayowl-online-services";
-    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-    const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
+  async initFileUpload(fileName: string): Promise<FileUploadResponse> {
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+    const multipartParams = {
+      Bucket: bucketName,
+      Key: fileName,
+      ACL: "public-read",
+    };
+    const multipartUpload = await s3
+      .createMultipartUpload(multipartParams)
+      .promise();
 
+    const resp = new FileUploadResponse();
+    resp.fileId = multipartUpload.UploadId;
+    resp.fileKey = multipartUpload.Key;
+
+    return resp;
+  }
+
+  async getMultipartPreSignedUrls(
+    fileId: string,
+    fileKey: string,
+    parts: number
+  ): Promise<MultipartSignedUrlResponse[]> {
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+    const multipartParams = {
+      Bucket: bucketName,
+      Key: fileKey,
+      UploadId: fileId,
+    };
+
+    const promises = [];
+    for (let index = 0; index < parts; index++) {
+      promises.push(
+        s3.getSignedUrlPromise("uploadPart", {
+          ...multipartParams,
+          PartNumber: index + 1,
+        })
+      );
+    }
+    const signedUrls = await Promise.all(promises);
+
+    const partSignedUrlList = signedUrls.map((signedUrl, index) => {
+      const resp = new MultipartSignedUrlResponse();
+      resp.signedUrl = signedUrl;
+      resp.PartNumber = index + 1;
+      return resp;
+    });
+
+    return partSignedUrlList;
+  }
+
+  async finalizeMultipartUpload(
+    input: FinalMultipartUploadInput
+  ): Promise<String | undefined> {
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+    const multipartParams: aws.S3.CompleteMultipartUploadRequest = {
+      Bucket: bucketName,
+      Key: input.fileKey,
+      UploadId: input.fileId,
+      MultipartUpload: {
+        Parts: _.orderBy(input.parts, ["PartNumber"], ["asc"]),
+      },
+    };
+
+    const completeMultipartUploadOutput = await s3
+      .completeMultipartUpload(multipartParams)
+      .promise();
+
+    return completeMultipartUploadOutput.Location;
+  }
+
+  async getS3SignedURL(fileName: string): Promise<string> {
     const s3 = new aws.S3({
       region,
       accessKeyId,
@@ -553,12 +645,13 @@ class UserService {
       signatureVersion: "v4",
     });
 
-    const rawBytes = await randomBytes(16);
-    const imageName = rawBytes.toString("hex");
+    // const rawBytes = await randomBytes(16);
+    // const imageName = rawBytes.toString("hex");
 
     const params = {
       Bucket: bucketName,
-      Key: imageName,
+      Key: fileName,
+      Type: "",
       Expires: 60,
     };
 

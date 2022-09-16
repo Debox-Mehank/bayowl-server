@@ -150,3 +150,42 @@ export class UserServicesStatusInput {
   @Field(() => UserServiceStatus)
   status: UserServiceStatus;
 }
+
+@ObjectType()
+export class FileUploadResponse {
+  @Field(() => String, { nullable: true })
+  fileId?: string;
+
+  @Field(() => String, { nullable: true })
+  fileKey?: string;
+}
+
+@ObjectType()
+export class MultipartSignedUrlResponse {
+  @Field(() => String, { nullable: true })
+  signedUrl?: string;
+
+  @Field(() => Number, { nullable: true })
+  PartNumber?: number;
+}
+
+@InputType()
+export class FinalMultipartUploadPartsInput {
+  @Field(() => String, { nullable: true })
+  PartNumber: number;
+
+  @Field(() => Number, { nullable: true })
+  ETag: string;
+}
+
+@InputType()
+export class FinalMultipartUploadInput {
+  @Field(() => String, { nullable: true })
+  fileId: string;
+
+  @Field(() => String, { nullable: true })
+  fileKey: string;
+
+  @Field(() => FinalMultipartUploadPartsInput, { nullable: true })
+  parts: FinalMultipartUploadPartsInput[];
+}

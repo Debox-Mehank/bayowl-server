@@ -113,7 +113,7 @@ export const paymentCallbackHandler = async (req: Request, res: Response) => {
       { $set: { "services.$.paid": true } }
     );
 
-    res.redirect(`${process.env.APP_URL}/dashboard`);
+    res.redirect(`${process.env.APP_URL}/payment-success`);
   } else {
     res.status(400).json({
       success: false,
