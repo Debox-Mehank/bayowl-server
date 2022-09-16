@@ -31,6 +31,16 @@ export default class ServicesResolver {
     return this.service.addService(input);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware([isAdmin])
+  assignService(
+    @Arg("serviceId") serviceId: String,
+    @Arg("adminId") adminId: String,
+    @Ctx() context: Context
+  ) {
+    return this.service.assignService(serviceId, adminId, context);
+  }
+
   @Query(() => [Services])
   // @UseMiddleware([isAdmin])
   getAllService() {
@@ -39,8 +49,8 @@ export default class ServicesResolver {
 
   @Query(() => [UserServices])
   // @UseMiddleware([isAdmin])
-  getAllUnAssignedService() {
-    return this.service.getAllUnAssignedService();
+  getAllServiceForEmployee() {
+    return this.service.getAllServiceForEmployee();
   }
 
   @Query(() => [Services])
