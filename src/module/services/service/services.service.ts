@@ -1,3 +1,4 @@
+import { ApolloError } from "apollo-server-express";
 import Context from "../../../interface/context";
 import { UserServicesInput } from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
@@ -14,29 +15,43 @@ class ServicesService {
     return true;
   }
 
+  async assignService(
+    serviceId: String,
+    assignId: String,
+    ctx: Context
+  ): Promise<boolean> {
+    try {
+      await UserModel.findOneAndUpdate(
+        { "services._id": serviceId },
+        {
+          $set: {
+            "services.$.assignedTo": assignId,
+            "services.$.assignedBy": ctx.user,
+          },
+        }
+      );
+      return true;
+    } catch (error) {
+      throw new ApolloError(error as string);
+    }
+  }
+
   async getAllService(): Promise<Services[]> {
     return await ServicesModel.find({}).lean();
   }
 
-  async getAllUnAssignedService() {
-    return await UserModel.aggregate([
-      {
-        $match: {
-          "services.assignedTo": null,
-        },
-      },
+  async getAllServiceForEmployee() {
+    const users = await UserModel.aggregate([
       { $unwind: "$services" },
-      {
-        $match: {
-          "services.assignedTo": null,
-        },
-      },
       {
         $replaceRoot: {
           newRoot: "$services",
         },
       },
     ]);
+    return await UserModel.populate(users, {
+      path: "assignedTo.name",
+    });
   }
 
   async getServicesDetail(input: ServicesDetailInput): Promise<Services[]> {
