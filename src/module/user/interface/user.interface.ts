@@ -149,6 +149,10 @@ export class UserServices extends Services {
   @Field(() => Date, { nullable: true })
   @prop({ default: null })
   estDeliveryDate: Date;
+
+  @Field(() => String, { nullable: true })
+  @prop({ default: null })
+  reuploadNote: string;
 }
 
 @InputType()

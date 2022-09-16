@@ -1,6 +1,12 @@
+import aws from "aws-sdk";
 import { ApolloError } from "apollo-server-express";
 import Context from "../../../interface/context";
-import { UserServicesInput } from "../../user/interface/user.interface";
+import {
+  defaultStatus,
+  ServiceStatusObjectState,
+  UserServicesInput,
+  UserServiceStatus,
+} from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
 import UserService from "../../user/service/user.service";
 import {
@@ -8,6 +14,11 @@ import {
   ServicesInput,
 } from "../interface/services.input";
 import { Services, ServicesModel } from "../schema/services.schema";
+
+const region = "ap-south-1";
+const bucketName = "bayowl-online-services";
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
 
 class ServicesService {
   async addService(input: ServicesInput[]): Promise<boolean> {
@@ -69,20 +80,81 @@ class ServicesService {
     }
   }
 
-  async addUserService(service: UserServicesInput, context: Context) {
-    if (context.role === "user") {
-      await UserModel.findOneAndUpdate(
-        { _id: context.user },
+  async requestReupload(
+    userId: string,
+    serviceId: string,
+    reuploadNote: string
+  ): Promise<boolean> {
+    // Delete previously uploaded files, reference files for this service id from s3 and mongodb
+    // change the status back to pending upload with reupload note and reupload date
+
+    // Initializing S3
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+
+    // Getting File Name
+    const uploadFileName = `uploadedFiles_${serviceId}`;
+    const referenceFileName = `referenceFiles_${serviceId}`;
+
+    // Deleting from S3
+    try {
+      const { Deleted, Errors } = await s3
+        .deleteObjects({
+          Bucket: bucketName,
+          Delete: {
+            Objects: [{ Key: uploadFileName }, { Key: referenceFileName }],
+            Quiet: false,
+          },
+        })
+        .promise();
+
+      if (Errors) throw new ApolloError(Errors[0].Message?.toString() ?? "");
+
+      if (!Deleted) {
+        return false;
+      }
+
+      // Update users collection
+      let newStatus = [...defaultStatus];
+
+      newStatus.forEach((element) => {
+        if (element.name === UserServiceStatus.pendingupload) {
+          element.state = ServiceStatusObjectState.current;
+        }
+        if (element.name === UserServiceStatus.underreview) {
+          element.state = ServiceStatusObjectState.pending;
+        }
+      });
+
+      await UserModel.updateOne(
         {
-          $addToSet: {
-            services: service,
+          _id: userId,
+          services: {
+            $elemMatch: {
+              _id: serviceId,
+            },
+          },
+        },
+        {
+          $set: {
+            "services.$.uploadedFiles": [],
+            "services.$.referenceFiles": [],
+            "services.$.statusType": UserServiceStatus.pendingupload,
+            "services.$.status": newStatus,
+            "services.$.reuploadNote": reuploadNote,
+            "services.$.reupload": new Date().toUTCString(),
           },
         }
       );
 
       return true;
+    } catch (error: any) {
+      throw new ApolloError(error.toString());
     }
-    return false;
   }
 }
 

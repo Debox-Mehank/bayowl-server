@@ -59,11 +59,12 @@ export default class ServicesResolver {
   }
 
   @Query(() => Boolean)
-  @UseMiddleware([isAuth])
-  addUserService(
-    @Arg("input") input: UserServicesInput,
-    @Ctx() context: Context
-  ) {
-    return this.service.addUserService(input, context);
+  @UseMiddleware([isAuth, isAdmin])
+  requestReupload(
+    @Arg("userId") userId: string,
+    @Arg("serviceId") serviceId: string,
+    @Arg("reuploadNote") reuploadNote: string
+  ): Promise<Boolean> {
+    return this.service.requestReupload(userId, serviceId, reuploadNote);
   }
 }
