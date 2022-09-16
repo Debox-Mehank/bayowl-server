@@ -171,10 +171,10 @@ export class MultipartSignedUrlResponse {
 
 @InputType()
 export class FinalMultipartUploadPartsInput {
-  @Field(() => String, { nullable: true })
+  @Field(() => Number, { nullable: true })
   PartNumber: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => String, { nullable: true })
   ETag: string;
 }
 
@@ -186,6 +186,6 @@ export class FinalMultipartUploadInput {
   @Field(() => String, { nullable: true })
   fileKey: string;
 
-  @Field(() => FinalMultipartUploadPartsInput, { nullable: true })
+  @Field(() => [FinalMultipartUploadPartsInput], { nullable: true })
   parts: FinalMultipartUploadPartsInput[];
 }

@@ -18,12 +18,16 @@ import { sendUserVerificationEmail } from "../../../mails";
 import { VerificationTokenType } from "../../../interface/jwt";
 import { PaymentModel } from "../../payment/schema/payment.schema";
 import {
+  defaultStatus,
   FileUploadResponse,
   FinalMultipartUploadInput,
   MultipartSignedUrlResponse,
+  ServiceStatusObjectState,
   UserServices,
+  UserServiceStatus,
 } from "../interface/user.interface";
 import _ from "lodash";
+import { CreateMultipartUploadRequest } from "aws-sdk/clients/s3";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
@@ -558,10 +562,10 @@ class UserService {
       secretAccessKey: accessKeySecret,
       signatureVersion: "v4",
     });
-    const multipartParams = {
+    const multipartParams: CreateMultipartUploadRequest = {
       Bucket: bucketName,
       Key: fileName,
-      ACL: "public-read",
+      // ACL: "public-read",
     };
     const multipartUpload = await s3
       .createMultipartUpload(multipartParams)
@@ -630,11 +634,16 @@ class UserService {
       },
     };
 
-    const completeMultipartUploadOutput = await s3
-      .completeMultipartUpload(multipartParams)
-      .promise();
+    try {
+      const completeMultipartUploadOutput = await s3
+        .completeMultipartUpload(multipartParams)
+        .promise();
 
-    return completeMultipartUploadOutput.Location;
+      return completeMultipartUploadOutput.Location;
+    } catch (error: any) {
+      console.log(error);
+      throw new ApolloError(error.toString());
+    }
   }
 
   async getS3SignedURL(fileName: string): Promise<string> {
@@ -650,8 +659,7 @@ class UserService {
 
     const params = {
       Bucket: bucketName,
-      Key: fileName,
-      Type: "",
+      Key: fileName + ".zip",
       Expires: 60,
     };
 
@@ -674,6 +682,17 @@ class UserService {
       throw new ApolloError("Something went wrong, try again later.");
     }
 
+    let newStatus = [...defaultStatus];
+
+    newStatus.forEach((element) => {
+      if (element.name === UserServiceStatus.pendingupload) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+      if (element.name === UserServiceStatus.underreview) {
+        element.state = ServiceStatusObjectState.current;
+      }
+    });
+
     await UserModel.updateOne(
       {
         _id: ctx.user,
@@ -687,6 +706,8 @@ class UserService {
         $set: {
           "services.$.uploadedFiles": uplodedFiles,
           "services.$.referenceFiles": referenceUploadedFiles ?? [],
+          "services.$.statusType": UserServiceStatus.underreview,
+          "services.$.status": newStatus,
         },
       }
     );
