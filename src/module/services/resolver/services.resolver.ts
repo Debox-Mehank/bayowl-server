@@ -8,7 +8,10 @@ import {
 } from "type-graphql";
 import Context from "../../../interface/context";
 import { isAdmin, isAuth } from "../../../middleware/auth";
-import { UserServicesInput } from "../../user/interface/user.interface";
+import {
+  UserServices,
+  UserServicesInput,
+} from "../../user/interface/user.interface";
 import {
   ServicesDetailInput,
   ServicesInput,
@@ -32,6 +35,12 @@ export default class ServicesResolver {
   // @UseMiddleware([isAdmin])
   getAllService() {
     return this.service.getAllService();
+  }
+
+  @Query(() => [UserServices])
+  // @UseMiddleware([isAdmin])
+  getAllUnAssignedService() {
+    return this.service.getAllUnAssignedService();
   }
 
   @Query(() => [Services])

@@ -7,7 +7,7 @@ import { sendUserVerificationEmail } from "../../../mails";
 import { getUserEmail } from "../../user/helper";
 import { UserServicesInput } from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
-import { PaymentModel } from "../schema/payment.schema";
+import { Payment, PaymentModel } from "../schema/payment.schema";
 
 class PaymentService {
   async initiatePayment(
@@ -128,6 +128,9 @@ class PaymentService {
 
     if (signature === expectedSign) {
     }
+  }
+  async getAllPayment(): Promise<Payment[]> {
+    return await PaymentModel.find({});
   }
 }
 

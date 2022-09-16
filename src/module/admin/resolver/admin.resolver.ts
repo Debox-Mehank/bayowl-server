@@ -1,4 +1,8 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import Context from "../../../interface/context";
+import { User } from "../../user/schema/user.schema";
+import { AdminLoginInput, AdminRegisterInput } from "../interface/admin.input";
+import { Admin } from "../schema/admin.schema";
 import AdminService from "../service/admin.service";
 
 @Resolver()
@@ -6,10 +10,48 @@ export default class AdminResolver {
   constructor(private service: AdminService) {
     this.service = new AdminService();
   }
-  // Admin login
-  // Admin addEmployee / addManager
-  // Admin me
-  // Admin logout
+
+  @Query(() => [User])
+  getAllUser(): Promise<User[]> {
+    return this.service.getAllUser();
+  }
+
+  @Query(() => String)
+  meAdmin(@Ctx() context: Context): Promise<String> {
+    return this.service.meAdmin(context);
+  }
+
+  @Mutation(() => String)
+  addUser(
+    @Arg("input") input: AdminRegisterInput,
+    @Ctx() context: Context
+  ): Promise<String> {
+    return this.service.createAdmin(input, context);
+  }
+
+  @Query(() => [Admin])
+  allAdmins(): Promise<Admin[]> {
+    return this.service.allAdmin();
+  }
+
+  @Query(() => [Admin])
+  allEmployee(): Promise<Admin[]> {
+    return this.service.allEmployees();
+  }
+
+  @Query(() => Boolean)
+  adminLogin(
+    @Arg("input") input: AdminLoginInput,
+    @Ctx() context: Context
+  ): Promise<boolean> {
+    return this.service.loginAdmin(input, context);
+  }
+
+  @Query(() => Boolean)
+  adminLogout(@Ctx() context: Context) {
+    return this.service.logoutAdmin(context);
+  }
+
   // Admin allEmployees
   // Admin number of services not yet started from client
   // Admin number of services not yet started from employee
