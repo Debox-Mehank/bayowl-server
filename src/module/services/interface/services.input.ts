@@ -30,9 +30,6 @@ export class ServicesInput {
   subService2: string;
 
   @Field(() => String, { nullable: true })
-  for: string;
-
-  @Field(() => String, { nullable: true })
   description: string;
 
   @Field(() => Number, {
@@ -68,7 +65,10 @@ export class ServicesInput {
   revisionsDelivery: number;
 
   @Field(() => String, { nullable: true })
-  mixVocalTuning: string;
+  mixVocalTuningBasic: string;
+
+  @Field(() => String, { nullable: true })
+  mixVocalTuningAdvanced: string;
 
   @Field(() => String, { nullable: true })
   mixProcessingReverbs: string;
@@ -91,9 +91,6 @@ export class ServicesDetailInput {
   @Field(() => String, { nullable: false })
   subCategory: string;
 
-  @Field(() => String, { nullable: false })
-  serviceName: string;
-
   @Field(() => String, { nullable: true })
-  subService: string;
+  serviceName: string;
 }

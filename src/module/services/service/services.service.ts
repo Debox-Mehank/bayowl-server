@@ -55,18 +55,16 @@ class ServicesService {
   }
 
   async getServicesDetail(input: ServicesDetailInput): Promise<Services[]> {
-    if (input.subService) {
+    if (input.serviceName) {
       return await ServicesModel.find({
         mainCategory: input.mainCategory,
         subCategory: input.subCategory,
         serviceName: input.serviceName,
-        subService: input.subService,
       }).lean();
     } else {
       return await ServicesModel.find({
         mainCategory: input.mainCategory,
         subCategory: input.subCategory,
-        serviceName: input.serviceName,
       }).lean();
     }
   }

@@ -50,10 +50,6 @@ export class Services {
 
   @Field(() => String, { nullable: true })
   @prop({ default: null, trim: true })
-  for: string;
-
-  @Field(() => String, { nullable: true })
-  @prop({ default: null, trim: true })
   description: string;
 
   @Field(() => Number, {
@@ -100,7 +96,11 @@ export class Services {
 
   @Field(() => String, { nullable: true })
   @prop({ default: null, trim: true })
-  mixVocalTuning: string;
+  mixVocalTuningBasic: string;
+
+  @Field(() => String, { nullable: true })
+  @prop({ default: null, trim: true })
+  mixVocalTuningAdvanced: string;
 
   @Field(() => String, { nullable: true })
   @prop({ default: null, trim: true })
