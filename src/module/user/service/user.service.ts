@@ -672,7 +672,8 @@ class UserService {
     ctx: Context,
     serviceId: string,
     uplodedFiles: string[],
-    referenceUploadedFiles?: string[]
+    referenceUploadedFiles?: string[],
+    notes?: string
   ): Promise<boolean> {
     // Check if reference urls there or not
     // Update the status from pending upload to under review
@@ -708,6 +709,8 @@ class UserService {
           "services.$.referenceFiles": referenceUploadedFiles ?? [],
           "services.$.statusType": UserServiceStatus.underreview,
           "services.$.status": newStatus,
+          "services.$.notes": notes ?? null,
+          "services.$.submissionDate": new Date().toUTCString(),
         },
       }
     );

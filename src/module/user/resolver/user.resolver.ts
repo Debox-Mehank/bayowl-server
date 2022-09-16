@@ -148,14 +148,16 @@ export default class UserResolver {
     @Ctx() context: Context,
     @Arg("serviceId") serviceId: string,
     @Arg("uplodedFiles", () => [String]) uplodedFiles: string[],
-    @Arg("referenceUploadedFiles", () => [String])
-    referenceUploadedFiles?: string[]
+    @Arg("referenceUploadedFiles", () => [String], { nullable: true })
+    referenceUploadedFiles?: string[],
+    @Arg("notes", () => String, { nullable: true }) notes?: string
   ): Promise<boolean> {
     return this.service.uploadFilesForService(
       context,
       serviceId,
       uplodedFiles,
-      referenceUploadedFiles
+      referenceUploadedFiles,
+      notes
     );
   }
 }
