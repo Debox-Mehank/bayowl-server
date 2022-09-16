@@ -118,11 +118,11 @@ export class Services {
   @prop({ default: [] })
   addOn: mongoose.Types.Array<AddOn>;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @prop()
   createdAt: Date;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @prop()
   updatedAt: Date;
 }

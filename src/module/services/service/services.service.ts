@@ -1,6 +1,7 @@
 import Context from "../../../interface/context";
 import { UserServicesInput } from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
+import UserService from "../../user/service/user.service";
 import {
   ServicesDetailInput,
   ServicesInput,
@@ -15,6 +16,27 @@ class ServicesService {
 
   async getAllService(): Promise<Services[]> {
     return await ServicesModel.find({}).lean();
+  }
+
+  async getAllUnAssignedService() {
+    return await UserModel.aggregate([
+      {
+        $match: {
+          "services.assignedTo": null,
+        },
+      },
+      { $unwind: "$services" },
+      {
+        $match: {
+          "services.assignedTo": null,
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$services",
+        },
+      },
+    ]);
   }
 
   async getServicesDetail(input: ServicesDetailInput): Promise<Services[]> {

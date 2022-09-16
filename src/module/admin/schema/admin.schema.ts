@@ -37,33 +37,33 @@ registerEnumType(AdminRole, {
 @plugin(mongooseAutoPopulate)
 @ObjectType()
 export class Admin {
-  @Field(() => ID)
+  @Field(() => ID, { nullable: true })
   _id: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   @prop({ required: true, trim: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   @prop({ required: true, unique: true, trim: true })
   email: string;
 
   @prop({ required: true, trim: true })
   password: string;
 
-  @Field(() => AdminRole, { nullable: false })
+  @Field(() => AdminRole, { nullable: true })
   @prop({ required: true })
   type: AdminRole;
 
-  @Field(() => Admin)
+  @Field(() => Admin, { nullable: true })
   @prop({ ref: () => Admin, autopopulate: true, nullable: true, default: null })
   createdBy: Ref<Admin>;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @prop()
   createdAt: Date;
 
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @prop()
   updatedAt: Date;
 }
