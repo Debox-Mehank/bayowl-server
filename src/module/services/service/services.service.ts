@@ -158,8 +158,7 @@ class ServicesService {
             "services.$.reuploadNote": reuploadNote,
             "services.$.reupload": new Date().toUTCString(),
           },
-        },
-        { upsert: true }
+        }
       );
 
       return updateUser.acknowledged;
