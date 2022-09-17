@@ -149,6 +149,10 @@ export class UserServices extends Services {
   @prop({ ref: () => Admin, nullable: true, default: null })
   assignedBy: Ref<Admin>;
 
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  assignedTime: Date;
+
   @Field(() => UserServiceStatus, { nullable: false })
   @prop({ default: UserServiceStatus.pendingupload })
   statusType: UserServiceStatus;

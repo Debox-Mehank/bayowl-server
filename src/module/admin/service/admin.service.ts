@@ -16,11 +16,11 @@ class AdminService {
     return await UserModel.find({}).lean();
   }
 
-  async meAdmin(context: Context): Promise<String> {
-    if (context.role) {
-      return context.role;
+  async meAdmin(context: Context): Promise<Admin | null> {
+    if (context.role !== "user") {
+      return await AdminModel.findById(context.user);
     } else {
-      return "false";
+      throw new ApolloError("You are not authorized");
     }
   }
 

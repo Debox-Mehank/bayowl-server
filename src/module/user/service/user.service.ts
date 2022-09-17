@@ -698,7 +698,8 @@ class UserService {
     serviceId: string,
     uplodedFiles: string[],
     referenceUploadedFiles?: string[],
-    notes?: string
+    notes?: string,
+    isReupload?: boolean
   ): Promise<boolean> {
     // Check if reference urls there or not
     // Update the status from pending upload to under review
@@ -736,6 +737,7 @@ class UserService {
           "services.$.status": newStatus,
           "services.$.notes": notes ?? null,
           "services.$.submissionDate": new Date().toUTCString(),
+          "services.$.reupload": isReupload ? new Date().toUTCString() : null,
         },
       }
     );

@@ -1,6 +1,6 @@
 import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import Context from "../../../interface/context";
-import { isAuth } from "../../../middleware/auth";
+import { isAdmin, isAuth } from "../../../middleware/auth";
 import {
   FileUploadResponse,
   FinalMultipartUploadInput,
@@ -82,7 +82,7 @@ export default class UserResolver {
   }
 
   @Query(() => Boolean)
-  @UseMiddleware([isAuth])
+  @UseMiddleware([isAuth, isAdmin])
   addDeliverFiles(
     @Arg("serviceId") serviceId: string,
     @Arg("url") url: string
@@ -164,14 +164,16 @@ export default class UserResolver {
     @Arg("uplodedFiles", () => [String]) uplodedFiles: string[],
     @Arg("referenceUploadedFiles", () => [String], { nullable: true })
     referenceUploadedFiles?: string[],
-    @Arg("notes", () => String, { nullable: true }) notes?: string
+    @Arg("notes", () => String, { nullable: true }) notes?: string,
+    @Arg("isReupload", () => Boolean, { nullable: true }) isReupload?: boolean
   ): Promise<boolean> {
     return this.service.uploadFilesForService(
       context,
       serviceId,
       uplodedFiles,
       referenceUploadedFiles,
-      notes
+      notes,
+      isReupload
     );
   }
 }

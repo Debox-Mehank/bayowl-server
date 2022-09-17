@@ -16,8 +16,8 @@ export default class AdminResolver {
     return this.service.getAllUser();
   }
 
-  @Query(() => String)
-  meAdmin(@Ctx() context: Context): Promise<String> {
+  @Query(() => Admin, { nullable: true })
+  meAdmin(@Ctx() context: Context): Promise<Admin | null> {
     return this.service.meAdmin(context);
   }
 

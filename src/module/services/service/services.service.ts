@@ -16,6 +16,8 @@ import {
 } from "../interface/services.input";
 import { Services, ServicesModel } from "../schema/services.schema";
 import moment from "moment";
+import { AdminRole } from "../../admin/schema/admin.schema";
+import { isDocument } from "@typegoose/typegoose";
 
 const region = "ap-south-1";
 const bucketName = "bayowl-online-services";
@@ -40,6 +42,7 @@ class ServicesService {
           $set: {
             "services.$.assignedTo": assignId,
             "services.$.assignedBy": ctx.user,
+            "services.$.assignedTime": new Date().toUTCString(),
           },
         }
       );
@@ -53,14 +56,43 @@ class ServicesService {
     return await ServicesModel.find({}).lean();
   }
 
-  async getAllServiceForEmployee() {
+  async getAllServiceForEmployee(ctx: Context) {
+    if (ctx.role !== AdminRole.employee) {
+      throw new ApolloError("You are not authorized to access this.");
+    }
     const newU = await UserModel.find({
       services: { $exists: true, $not: { $size: 0 } },
     })
       .populate("services.assignedTo services.assignedBy")
       .select("services");
     const respArr: UserServices[] = [];
-    newU.map((el) => el.services.map((elem) => respArr.push(elem)));
+    newU.map((el) =>
+      el.services.map(
+        (elem) =>
+          // elem.projectName &&
+          // elem.statusType === UserServiceStatus.underreview &&
+          isDocument(elem.assignedTo) &&
+          elem.assignedTo._id.toString() === ctx.user &&
+          respArr.push(elem)
+      )
+    );
+    return respArr;
+  }
+
+  async getAllServiceForMaster() {
+    const newU = await UserModel.find({
+      services: { $exists: true, $not: { $size: 0 } },
+    })
+      .populate("services.assignedTo services.assignedBy")
+      .select("services");
+    const respArr: UserServices[] = [];
+    newU.map((el) =>
+      el.services.map((elem) =>
+        // elem.projectName &&
+        // elem.statusType === UserServiceStatus.underreview &&
+        respArr.push(elem)
+      )
+    );
     return respArr;
     // const users = await UserModel.aggregate([
     //   { $unwind: "$services" },

@@ -48,9 +48,15 @@ export default class ServicesResolver {
   }
 
   @Query(() => [UserServices])
-  // @UseMiddleware([isAdmin])
-  getAllServiceForEmployee() {
-    return this.service.getAllServiceForEmployee();
+  @UseMiddleware([isAuth, isAdmin])
+  getAllServiceForEmployee(@Ctx() context: Context) {
+    return this.service.getAllServiceForEmployee(context);
+  }
+
+  @Query(() => [UserServices])
+  @UseMiddleware([isAuth, isAdmin])
+  getAllServiceForMaster() {
+    return this.service.getAllServiceForMaster();
   }
 
   @Query(() => [Services])
