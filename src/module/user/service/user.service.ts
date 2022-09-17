@@ -560,7 +560,7 @@ class UserService {
       { "services._id": serviceId },
       {
         $set: {
-          "services.statusType": UserServiceStatus.delivered,
+          "services.$.statusType": UserServiceStatus.delivered,
         },
       }
     );
@@ -572,7 +572,7 @@ class UserService {
       { "services._id": serviceId },
       {
         $set: {
-          "services.deliveredFiles": [url],
+          "services.$.deliveredFiles": [url],
         },
       }
       // { upsert: true } //should remove
