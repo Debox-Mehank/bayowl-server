@@ -4,6 +4,7 @@ import Context from "../../../interface/context";
 import {
   defaultStatus,
   ServiceStatusObjectState,
+  UserServices,
   UserServicesInput,
   UserServiceStatus,
 } from "../../user/interface/user.interface";
@@ -52,17 +53,27 @@ class ServicesService {
   }
 
   async getAllServiceForEmployee() {
-    const users = await UserModel.aggregate([
-      { $unwind: "$services" },
-      {
-        $replaceRoot: {
-          newRoot: "$services",
-        },
-      },
-    ]);
-    return await UserModel.populate(users, {
-      path: "assignedTo.name",
-    });
+    const newU = await UserModel.find({
+      services: { $exists: true, $not: { $size: 0 } },
+    })
+      .populate("services.assignedTo services.assignedBy")
+      .select("services");
+    const respArr: UserServices[] = [];
+    newU.map((el) => el.services.map((elem) => respArr.push(elem)));
+    return respArr;
+    // const users = await UserModel.aggregate([
+    //   { $unwind: "$services" },
+    //   {
+    //     $replaceRoot: {
+    //       newRoot: "$services",
+    //     },
+    //   },
+    // ]);
+    // await UserModel.populate(users, {
+    //   path: "services.assignedTo.name",
+    // });
+
+    // return users;
   }
 
   async getServicesDetail(input: ServicesDetailInput): Promise<Services[]> {
@@ -81,7 +92,6 @@ class ServicesService {
   }
 
   async requestReupload(
-    userId: string,
     serviceId: string,
     reuploadNote: string
   ): Promise<boolean> {
@@ -97,8 +107,8 @@ class ServicesService {
     });
 
     // Getting File Name
-    const uploadFileName = `uploadedFiles_${serviceId}`;
-    const referenceFileName = `referenceFiles_${serviceId}`;
+    const uploadFileName = `uploadedFiles_${serviceId}.zip`;
+    const referenceFileName = `referenceFiles_${serviceId}.zip`;
 
     // Deleting from S3
     try {
@@ -112,7 +122,8 @@ class ServicesService {
         })
         .promise();
 
-      if (Errors) throw new ApolloError(Errors[0].Message?.toString() ?? "");
+      if (Errors && Errors.length > 0)
+        throw new ApolloError(Errors.map((el) => el.Message ?? "").join(","));
 
       if (!Deleted) {
         return false;
@@ -130,9 +141,13 @@ class ServicesService {
         }
       });
 
-      await UserModel.findOneAndUpdate(
+      const updateUser = await UserModel.updateOne(
         {
-          "services._id": serviceId,
+          services: {
+            $elemMatch: {
+              _id: serviceId,
+            },
+          },
         },
         {
           $set: {
@@ -147,7 +162,7 @@ class ServicesService {
         { upsert: true }
       );
 
-      return true;
+      return updateUser.acknowledged;
     } catch (error: any) {
       throw new ApolloError(error.toString());
     }
