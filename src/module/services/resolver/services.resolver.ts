@@ -66,4 +66,13 @@ export default class ServicesResolver {
   ): Promise<Boolean> {
     return this.service.requestReupload(serviceId, reuploadNote);
   }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  confirmUpload(
+    @Arg("serviceId") serviceId: string,
+    @Arg("deliveryDays") deliveryDays: number
+  ): Promise<Boolean> {
+    return this.service.confirmUpload(serviceId, deliveryDays);
+  }
 }

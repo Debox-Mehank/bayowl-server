@@ -15,6 +15,7 @@ import {
   ServicesInput,
 } from "../interface/services.input";
 import { Services, ServicesModel } from "../schema/services.schema";
+import moment from "moment";
 
 const region = "ap-south-1";
 const bucketName = "bayowl-online-services";
@@ -157,6 +158,54 @@ class ServicesService {
             "services.$.status": newStatus,
             "services.$.reuploadNote": reuploadNote,
             "services.$.reupload": new Date().toUTCString(),
+          },
+        }
+      );
+
+      return updateUser.acknowledged;
+    } catch (error: any) {
+      throw new ApolloError(error.toString());
+    }
+  }
+
+  async confirmUpload(
+    serviceId: string,
+    deliveryDays: number
+  ): Promise<boolean> {
+    try {
+      // Update users collection
+      let newStatus = [...defaultStatus];
+
+      newStatus.forEach((element) => {
+        if (element.name === UserServiceStatus.pendingupload) {
+          element.state = ServiceStatusObjectState.completed;
+        }
+        if (element.name === UserServiceStatus.underreview) {
+          element.state = ServiceStatusObjectState.completed;
+        }
+        if (element.name === UserServiceStatus.workinprogress) {
+          element.state = ServiceStatusObjectState.current;
+        }
+      });
+
+      const estDeliveryTime = moment()
+        .add(deliveryDays, "days")
+        .toDate()
+        .toUTCString();
+
+      const updateUser = await UserModel.updateOne(
+        {
+          services: {
+            $elemMatch: {
+              _id: serviceId,
+            },
+          },
+        },
+        {
+          $set: {
+            "services.$.statusType": UserServiceStatus.workinprogress,
+            "services.$.status": newStatus,
+            "services.$.estDeliveryDate": estDeliveryTime,
           },
         }
       );
