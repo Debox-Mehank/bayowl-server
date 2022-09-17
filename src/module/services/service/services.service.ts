@@ -4,6 +4,7 @@ import Context from "../../../interface/context";
 import {
   defaultStatus,
   ServiceStatusObjectState,
+  UserServices,
   UserServicesInput,
   UserServiceStatus,
 } from "../../user/interface/user.interface";
@@ -52,17 +53,27 @@ class ServicesService {
   }
 
   async getAllServiceForEmployee() {
-    const users = await UserModel.aggregate([
-      { $unwind: "$services" },
-      {
-        $replaceRoot: {
-          newRoot: "$services",
-        },
-      },
-    ]);
-    return await UserModel.populate(users, {
-      path: "assignedTo.name",
-    });
+    const newU = await UserModel.find({
+      services: { $exists: true, $not: { $size: 0 } },
+    })
+      .populate("services.assignedTo services.assignedBy")
+      .select("services");
+    const respArr: UserServices[] = [];
+    newU.map((el) => el.services.map((elem) => respArr.push(elem)));
+    return respArr;
+    // const users = await UserModel.aggregate([
+    //   { $unwind: "$services" },
+    //   {
+    //     $replaceRoot: {
+    //       newRoot: "$services",
+    //     },
+    //   },
+    // ]);
+    // await UserModel.populate(users, {
+    //   path: "services.assignedTo.name",
+    // });
+
+    // return users;
   }
 
   async getServicesDetail(input: ServicesDetailInput): Promise<Services[]> {
@@ -81,7 +92,6 @@ class ServicesService {
   }
 
   async requestReupload(
-    userId: string,
     serviceId: string,
     reuploadNote: string
   ): Promise<boolean> {
@@ -97,8 +107,8 @@ class ServicesService {
     });
 
     // Getting File Name
-    const uploadFileName = `s3://bayowl-online-services/referenceFiles_6324caa0a771f956eeb67df4.zip`;
-    const referenceFileName = `s3://bayowl-online-services/uploadedFiles_6324caa0a771f956eeb67df4.zip`;
+    const uploadFileName = `uploadedFiles_${serviceId}.zip`;
+    const referenceFileName = `referenceFiles_${serviceId}.zip`;
 
     // Deleting from S3
     try {
@@ -133,7 +143,6 @@ class ServicesService {
 
       const updateUser = await UserModel.updateOne(
         {
-          _id: userId,
           services: {
             $elemMatch: {
               _id: serviceId,

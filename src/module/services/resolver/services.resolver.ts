@@ -61,10 +61,9 @@ export default class ServicesResolver {
   @Query(() => Boolean)
   @UseMiddleware([isAuth, isAdmin])
   requestReupload(
-    @Arg("userId") userId: string,
     @Arg("serviceId") serviceId: string,
     @Arg("reuploadNote") reuploadNote: string
   ): Promise<Boolean> {
-    return this.service.requestReupload(userId, serviceId, reuploadNote);
+    return this.service.requestReupload(serviceId, reuploadNote);
   }
 }
