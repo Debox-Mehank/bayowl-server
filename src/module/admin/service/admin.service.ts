@@ -88,7 +88,7 @@ class AdminService {
         httpOnly: true,
         sameSite: "none",
         secure: true,
-        domain: "api.inradius.in",
+        domain: ".bayowl.studio",
         path: "/",
         expires: new Date(0),
       });
@@ -128,7 +128,7 @@ class AdminService {
         httpOnly: true,
         sameSite: "none",
         secure: true,
-        domain: "api.inradius.in", //change to bayowl api server
+        domain: ".bayowl.studio", //change to bayowl api server
         path: "/",
       });
     } else {
