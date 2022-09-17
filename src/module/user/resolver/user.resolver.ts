@@ -76,6 +76,20 @@ export default class UserResolver {
     return this.service.me(context);
   }
 
+  @Query(() => Boolean)
+  approveProject(@Arg("serviceId") serviceId: String) {
+    return this.service.approveProject(serviceId);
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth])
+  addDeliverFiles(
+    @Arg("serviceId") serviceId: string,
+    @Arg("url") url: string
+  ): Promise<Boolean> {
+    return this.service.addDeliverFiles(serviceId, url);
+  }
+
   // User logout
   @Query(() => Boolean)
   @UseMiddleware([isAuth])

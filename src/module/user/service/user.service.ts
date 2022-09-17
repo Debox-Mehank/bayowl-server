@@ -555,6 +555,31 @@ class UserService {
     return service;
   }
 
+  async approveProject(serviceId: String): Promise<boolean> {
+    await UserModel.findOneAndUpdate(
+      { "services._id": serviceId },
+      {
+        $set: {
+          "services.statusType": UserServiceStatus.delivered,
+        },
+      }
+    );
+    return true;
+  }
+
+  async addDeliverFiles(serviceId: string, url: string) {
+    await UserModel.findOneAndUpdate(
+      { "services._id": serviceId },
+      {
+        $set: {
+          "services.deliveredFiles": [url],
+        },
+      }
+      // { upsert: true } //should remove
+    );
+    return true;
+  }
+
   async initFileUpload(fileName: string): Promise<FileUploadResponse> {
     const s3 = new aws.S3({
       region,

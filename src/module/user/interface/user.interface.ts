@@ -7,6 +7,7 @@ import { Services } from "../../services/schema/services.schema";
 export enum UserServiceStatus {
   pendingupload = "Pending Upload",
   underreview = "Under Review",
+  underreviewinternal = "Under Review Internally",
   workinprogress = "Work In Progress",
   delivered = "Delivered",
   revisionrequest = "Revision Request",
@@ -43,6 +44,21 @@ export class ServiceStatusObject {
 
 @ObjectType()
 export class RevisionFiles {
+  @Field(() => String, { nullable: true })
+  @prop({ default: null })
+  file: string;
+
+  @Field(() => String, { nullable: true })
+  @prop({ default: null })
+  description: string;
+
+  @Field(() => Number, { nullable: false })
+  @prop({ default: 1 })
+  revision: number;
+}
+
+@ObjectType()
+export class DeliveredFiles {
   @Field(() => String, { nullable: true })
   @prop({ default: null })
   file: string;
@@ -117,6 +133,13 @@ export class UserServices extends Services {
     default: [],
   })
   revisionFiles: mongoose.Types.Array<RevisionFiles>;
+
+  @Field(() => [String], { nullable: true })
+  @prop({
+    type: String,
+    default: [],
+  })
+  deliveredFiles: mongoose.Types.Array<string>;
 
   @Field(() => Admin, { nullable: true })
   @prop({ ref: () => Admin, nullable: true, default: null })
