@@ -130,14 +130,9 @@ class ServicesService {
         }
       });
 
-      await UserModel.updateOne(
+      await UserModel.findOneAndUpdate(
         {
-          _id: userId,
-          services: {
-            $elemMatch: {
-              _id: serviceId,
-            },
-          },
+          "services._id": serviceId,
         },
         {
           $set: {
@@ -148,7 +143,8 @@ class ServicesService {
             "services.$.reuploadNote": reuploadNote,
             "services.$.reupload": new Date().toUTCString(),
           },
-        }
+        },
+        { upsert: true }
       );
 
       return true;

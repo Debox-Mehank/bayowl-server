@@ -1,19 +1,27 @@
-import { getModelForClass, index, prop, Ref } from "@typegoose/typegoose";
+import {
+  getModelForClass,
+  index,
+  plugin,
+  prop,
+  Ref,
+} from "@typegoose/typegoose";
+import mongooseAutoPopulate from "mongoose-autopopulate";
 import { Field, ID, ObjectType } from "type-graphql";
 import { Admin } from "../../admin/schema/admin.schema";
 
 @index({ loginContent: 1 })
+@plugin(mongooseAutoPopulate)
 @ObjectType()
 export class DashboardContent {
   @Field(() => ID)
   _id: string;
 
   @Field(() => Admin)
-  @prop({ ref: () => Admin })
+  @prop({ ref: () => Admin, autopopulate: true })
   lastUpdatedBy: Ref<Admin>;
 
   @Field(() => Admin)
-  @prop({ ref: () => Admin })
+  @prop({ ref: () => Admin, autopopulate: true })
   createdBy: Ref<Admin>;
 
   @Field(() => String, { nullable: false })

@@ -5,6 +5,11 @@ import { Admin, AdminModel, AdminRole } from "../schema/admin.schema";
 import bcrypt from "bcrypt";
 import { signJwt } from "../../../utils/auth";
 import Context from "../../../interface/context";
+import {
+  DashboardEnum,
+  DashboardInterfaceClass,
+} from "../interface/dashboard.interface";
+import { UserServiceStatus } from "../../user/interface/user.interface";
 
 class AdminService {
   async getAllUser(): Promise<User[]> {
@@ -37,6 +42,44 @@ class AdminService {
 
   async allEmployees(): Promise<Admin[]> {
     return await AdminModel.find({ type: AdminRole.employee }).lean();
+  }
+
+  async dashboardMet() {
+    return [
+      {
+        label: DashboardEnum.NumberOfCustomersRegistered,
+        data: await UserModel.estimatedDocumentCount(),
+        // data: 0,
+      },
+      {
+        label: DashboardEnum.NumberOfCustomersWithPaidService,
+        data: await UserModel.countDocuments({
+          "services.paid": true,
+        }),
+        // data: 0,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesPendingAcceptance,
+        // data: await UserModel.countDocuments({
+        //   "services.assignedTo": null,
+        // }),
+        data: 0,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesInProgress,
+        // data: await UserModel.countDocuments({
+        //   "services.status": UserServiceStatus.workinprogress,
+        // }),
+        data: 0,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesCompleted,
+        // data: await UserModel.countDocuments({
+        //   "services.status": UserServiceStatus.completed,
+        // }),
+        data: 0,
+      },
+    ];
   }
 
   logoutAdmin(context: Context) {

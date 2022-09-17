@@ -4,7 +4,7 @@ import { User } from "../../user/schema/user.schema";
 import { AdminLoginInput, AdminRegisterInput } from "../interface/admin.input";
 import { Admin } from "../schema/admin.schema";
 import AdminService from "../service/admin.service";
-
+import { DashboardInterfaceClass } from "../interface/dashboard.interface";
 @Resolver()
 export default class AdminResolver {
   constructor(private service: AdminService) {
@@ -50,6 +50,11 @@ export default class AdminResolver {
   @Query(() => Boolean)
   adminLogout(@Ctx() context: Context) {
     return this.service.logoutAdmin(context);
+  }
+
+  @Query(() => [DashboardInterfaceClass])
+  dashboardMet() {
+    return this.service.dashboardMet();
   }
 
   // Admin allEmployees

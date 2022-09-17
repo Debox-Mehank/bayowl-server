@@ -1,4 +1,5 @@
 import { ApolloError } from "apollo-server-express";
+import Context from "../../../interface/context";
 import { DashboardContentInput } from "../interface/dashboard_content.interface";
 import {
   DashboardContent,
@@ -25,10 +26,15 @@ class DashboardContentService {
   }
 
   async addDashboardContent(
-    input: DashboardContentInput
+    input: DashboardContentInput,
+    ctx: Context
   ): Promise<DashboardContent> {
     try {
-      const addedContent = await DashboardContentModel.create(input);
+      const addedContent = await DashboardContentModel.create({
+        ...input,
+        lastUpdatedBy: ctx.user,
+        createdBy: ctx.user,
+      });
       return addedContent;
     } catch (error: any) {
       throw new ApolloError(error.toString());

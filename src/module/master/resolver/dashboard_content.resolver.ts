@@ -1,4 +1,5 @@
-import { Arg, Query, Resolver, UseMiddleware } from "type-graphql";
+import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
+import Context from "../../../interface/context";
 import { isAuth, isAdmin } from "../../../middleware/auth";
 import { DashboardContentInput } from "../interface/dashboard_content.interface";
 import { DashboardContent } from "../schema/dashboard_content.schema";
@@ -24,8 +25,11 @@ export default class DashboardContentResolver {
 
   @Query(() => DashboardContent)
   @UseMiddleware([isAuth, isAdmin])
-  addDashboardContent(@Arg("input") input: DashboardContentInput) {
-    return this.service.addDashboardContent(input);
+  addDashboardContent(
+    @Arg("input") input: DashboardContentInput,
+    @Ctx() context: Context
+  ) {
+    return this.service.addDashboardContent(input, context);
   }
 
   @Query(() => Boolean)
