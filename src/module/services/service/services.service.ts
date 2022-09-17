@@ -97,8 +97,8 @@ class ServicesService {
     });
 
     // Getting File Name
-    const uploadFileName = `uploadedFiles_${serviceId}`;
-    const referenceFileName = `referenceFiles_${serviceId}`;
+    const uploadFileName = `s3://bayowl-online-services/referenceFiles_6324caa0a771f956eeb67df4.zip`;
+    const referenceFileName = `s3://bayowl-online-services/uploadedFiles_6324caa0a771f956eeb67df4.zip`;
 
     // Deleting from S3
     try {
@@ -112,7 +112,8 @@ class ServicesService {
         })
         .promise();
 
-      if (Errors) throw new ApolloError(Errors[0].Message?.toString() ?? "");
+      if (Errors && Errors.length > 0)
+        throw new ApolloError(Errors.map((el) => el.Message ?? "").join(","));
 
       if (!Deleted) {
         return false;
@@ -130,7 +131,7 @@ class ServicesService {
         }
       });
 
-      await UserModel.updateOne(
+      const updateUser = await UserModel.updateOne(
         {
           _id: userId,
           services: {
@@ -151,7 +152,7 @@ class ServicesService {
         }
       );
 
-      return true;
+      return updateUser.acknowledged;
     } catch (error: any) {
       throw new ApolloError(error.toString());
     }
