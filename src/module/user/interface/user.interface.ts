@@ -169,10 +169,6 @@ export class UserServices extends Services {
   @prop({ default: 0 })
   requestReuploadCounter: number;
 
-  @Field(() => Number, { nullable: true })
-  @prop({ default: 0 })
-  rejectionCounter: number;
-
   @Field(() => String, { nullable: true })
   @prop({ default: null })
   notes: string;
