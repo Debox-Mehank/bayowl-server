@@ -1,4 +1,11 @@
-import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import Context from "../../../interface/context";
 import { isAdmin, isAuth } from "../../../middleware/auth";
 import {
@@ -81,6 +88,26 @@ export default class UserResolver {
     return this.service.approveProject(serviceId);
   }
 
+  // @Mutation(() => Boolean)
+  // @UseMiddleware([isAdmin])
+  // addRevisionFile(
+  //   @Arg("serviceId") serviceId: string,
+  //   @Arg("fileUrl") fileUrl: string,
+  //   @Arg("description") desc: string,
+  //   @Ctx() context: Context
+  // ) {
+  //   return this.service.addRevisionFile(serviceId, fileUrl, desc, context);
+  // }
+
+  @Query(() => Boolean)
+  addRevisionNotesByMaster(
+    @Arg("serviceId") serviceId: string,
+    @Arg("note") note: string,
+    @Ctx() context: Context
+  ) {
+    return this.service.addRevisionNotesByMaster(note, serviceId, context);
+  }
+
   @Query(() => Boolean)
   @UseMiddleware([isAuth, isAdmin])
   addDeliverFiles(
@@ -104,6 +131,7 @@ export default class UserResolver {
   verifyUser(@Arg("token") token: string): Promise<Boolean> {
     return this.service.verifyEmail(token);
   }
+
   // User update project name
   @Query(() => Boolean)
   @UseMiddleware([isAuth])

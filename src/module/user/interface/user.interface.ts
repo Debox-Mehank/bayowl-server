@@ -177,6 +177,18 @@ export class UserServices extends Services {
   @prop({ default: null })
   notes: string;
 
+  @Field(() => String, { nullable: true })
+  @prop({ default: null })
+  revisionNotesByMaster: string;
+
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  revisionTimeByMaster: Date;
+
+  @Field(() => Number, { nullable: true })
+  @prop({ default: 0 })
+  numberOfRevisionsByMaster: Number;
+
   @Field(() => Date, { nullable: true })
   @prop({ default: null })
   submissionDate: Date;
