@@ -89,14 +89,25 @@ export default class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  @UseMiddleware([isAdmin])
-  addRevisionFile(
+  @UseMiddleware([isAuth])
+  requestRevision(
     @Arg("serviceId") serviceId: string,
-    @Arg("fileUrl") fileUrl: string,
     @Arg("description") desc: string,
+    @Arg("revisionNumber") rNum: number,
     @Ctx() context: Context
   ) {
-    return this.service.addRevisionFile(serviceId, fileUrl, desc, context);
+    return this.service.requestRevision(serviceId, desc, rNum, context);
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware([isAdmin])
+  uploadRevisionFiles(
+    @Arg("serviceId") serviceId: string,
+    @Arg("fileUrl") fileUrl: string,
+    @Arg("revisionNumber") rNum: number,
+    @Ctx() context: Context
+  ) {
+    return this.service.uploadRevisionFiles(serviceId, fileUrl, rNum, context);
   }
 
   @Query(() => Boolean)

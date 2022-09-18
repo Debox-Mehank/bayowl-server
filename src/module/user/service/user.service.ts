@@ -597,7 +597,9 @@ class UserService {
   }
 
   async markCompleted(serviceId: string) {
-    const usersevice = await UserModel.findOne({ "services._id": serviceId });
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    });
     const service = usersevice?.services?.[0];
 
     if (!service) {
@@ -630,14 +632,20 @@ class UserService {
     return update.acknowledged;
   }
 
-  async addRevisionFile(
+  async requestRevision(
     serviceId: string,
-    fileUrl: string,
     desc: string,
+    rNum: number,
     ctx: Context
   ) {
-    if (ctx.role !== AdminRole.master)
-      throw new ApolloError("You are unauthorized");
+    const numOfService = await UserModel.findOne({
+      _id: ctx.user,
+      "services._id": serviceId,
+    });
+
+    if (!numOfService || numOfService.services.length === 0) {
+      throw new ApolloError("You can't access this service");
+    }
     // const numberOfPrevRevision = await UserModel.findOne({
     //   "services._id": serviceId
     // }).select("services.")
@@ -649,8 +657,8 @@ class UserService {
       {
         $push: {
           "services.$.revisionFiles": {
-            file: fileUrl,
             description: desc,
+            revision: rNum,
           },
         },
         $set: {
@@ -658,6 +666,51 @@ class UserService {
         },
         $inc: {
           "services.$.requestReuploadCounter": 1,
+        },
+      }
+    );
+    return true;
+  }
+
+  async uploadRevisionFiles(
+    serviceId: string,
+    fileUrl: string,
+    rNum: number,
+    ctx: Context
+  ) {
+    // const numberOfPrevRevision = await UserModel.findOne({
+    //   "services._id": serviceId
+    // }).select("services.")
+    // Need to add check for number of revision is surpassed or not
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    });
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service) {
+      throw new ApolloError("Service not found");
+    }
+
+    const revision = [...service!.revisionFiles];
+
+    revision.forEach((ind) => {
+      if (ind.revision === rNum) ind.file = fileUrl;
+    });
+
+    if (!revision) {
+      throw new ApolloError("Revision not found");
+    }
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $set: {
+          "services.$.revisionFiles": revision,
+          "services.$.statusType": UserServiceStatus.revisiondelivered,
         },
       }
     );
