@@ -582,28 +582,39 @@ class UserService {
     return true;
   }
 
-  // async addRevisionFile(
-  //   serviceId: string,
-  //   fileUrl: string,
-  //   desc: string,
-  //   ctx: Context
-  // ) {
-  //   if (ctx.role !== AdminRole.master)
-  //     throw new ApolloError("You are unauthorized");
-  //   await UserModel.findOneAndUpdate(
-  //     {
-  //       "services._id": serviceId,
-  //     },
-  //     {
-  //       $push: {
-  //         "services.$.revisionNotesByMaster": note,
-  //         "services.$.revisionTimeByMaster": new Date(),
-  //         "services.$.statusType": UserServiceStatus.workinprogress,
-  //       },
-  //     }
-  //   );
-  //   return true;
-  // }
+  async addRevisionFile(
+    serviceId: string,
+    fileUrl: string,
+    desc: string,
+    ctx: Context
+  ) {
+    if (ctx.role !== AdminRole.master)
+      throw new ApolloError("You are unauthorized");
+    // const numberOfPrevRevision = await UserModel.findOne({
+    //   "services._id": serviceId
+    // }).select("services.")
+    // Need to add check for number of revision is surpassed or not
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $push: {
+          "services.$.revisionFiles": {
+            file: fileUrl,
+            description: desc,
+          },
+        },
+        $set: {
+          "services.$.statusType": UserServiceStatus.revisionrequest,
+        },
+        $inc: {
+          "services.$.requestReuploadCounter": 1,
+        },
+      }
+    );
+    return true;
+  }
 
   async addRevisionNotesByMaster(
     note: string,

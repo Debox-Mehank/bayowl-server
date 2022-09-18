@@ -88,16 +88,16 @@ export default class UserResolver {
     return this.service.approveProject(serviceId);
   }
 
-  // @Mutation(() => Boolean)
-  // @UseMiddleware([isAdmin])
-  // addRevisionFile(
-  //   @Arg("serviceId") serviceId: string,
-  //   @Arg("fileUrl") fileUrl: string,
-  //   @Arg("description") desc: string,
-  //   @Ctx() context: Context
-  // ) {
-  //   return this.service.addRevisionFile(serviceId, fileUrl, desc, context);
-  // }
+  @Mutation(() => Boolean)
+  @UseMiddleware([isAdmin])
+  addRevisionFile(
+    @Arg("serviceId") serviceId: string,
+    @Arg("fileUrl") fileUrl: string,
+    @Arg("description") desc: string,
+    @Ctx() context: Context
+  ) {
+    return this.service.addRevisionFile(serviceId, fileUrl, desc, context);
+  }
 
   @Query(() => Boolean)
   addRevisionNotesByMaster(
