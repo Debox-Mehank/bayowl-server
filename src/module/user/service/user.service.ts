@@ -643,12 +643,21 @@ class UserService {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
     }).select("services");
+
     const service = usersevice?.services?.find(
       (el) => String(el._id) === serviceId
     );
 
     if (!service) {
       throw new ApolloError("Something went wrong, try again later");
+    }
+
+    if (++service.requestReuploadCounter > service.setOfRevisions) {
+      throw new ApolloError("You have exhausted all your revision requests");
+    }
+
+    if (++service.requestReuploadCounter !== rNum) {
+      throw new ApolloError("Invalid request number");
     }
 
     const numOfService = await UserModel.findOne({
