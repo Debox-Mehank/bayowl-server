@@ -599,8 +599,10 @@ class UserService {
   async markCompleted(serviceId: string) {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
-    });
-    const service = usersevice?.services?.[0];
+    }).select("services");
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
 
     if (!service) {
       throw new ApolloError("Something went wrong, try again later");
