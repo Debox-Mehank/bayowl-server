@@ -601,18 +601,30 @@ class UserService {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
     }).select("services");
-    const service = usersevice?.services?.find(
+
+    if (!usersevice) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    const serviceIndex = usersevice.services.findIndex(
       (el) => String(el._id) === serviceId
     );
 
+    let service: UserServices | undefined = undefined;
+
+    if (serviceIndex >= 0) {
+      service = usersevice.services[serviceIndex];
+    }
+
     if (!service) {
-      throw new ApolloError("Something went wrong, try again later");
+      return;
+      // throw new ApolloError("Something went wrong, try again later");
     }
 
     let newStatus = [...service.status];
 
     newStatus.forEach((element) => {
-      if (service.revisionFiles.length > 0) {
+      if (service!.revisionFiles.length > 0) {
         if (element.name === UserServiceStatus.revisiondelivered) {
           element.state = ServiceStatusObjectState.completed;
         }
@@ -646,9 +658,19 @@ class UserService {
       "services._id": serviceId,
     }).select("services");
 
-    const service = usersevice?.services?.find(
+    if (!usersevice) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    const serviceIndex = usersevice.services.findIndex(
       (el) => String(el._id) === serviceId
     );
+
+    let service: UserServices | undefined = undefined;
+
+    if (serviceIndex >= 0) {
+      service = usersevice?.services[serviceIndex];
+    }
 
     if (!service) {
       throw new ApolloError("Something went wrong, try again later");
@@ -687,10 +709,6 @@ class UserService {
       .toDate()
       .toUTCString();
 
-    // const numberOfPrevRevision = await UserModel.findOne({
-    //   "services._id": serviceId
-    // }).select("services.")
-    // Need to add check for number of revision is surpassed or not
     await UserModel.findOneAndUpdate(
       {
         "services._id": serviceId,
