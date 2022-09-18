@@ -601,34 +601,17 @@ class UserService {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
     }).select("services");
-
-    if (!usersevice) {
-      throw new ApolloError("Something went wrong, try again later");
-    }
-
-    const serviceIndex = usersevice.services.findIndex(
+    const service = usersevice?.services?.find(
       (el) => String(el._id) === serviceId
     );
 
-    let service: UserServices | undefined = undefined;
-
-    if (serviceIndex >= 0) {
-      service = usersevice.services[serviceIndex];
-    }
-
     if (!service) {
-      return;
-      // throw new ApolloError("Something went wrong, try again later");
+      throw new ApolloError("Something went wrong, try again later");
     }
 
     let newStatus = [...service.status];
 
     newStatus.forEach((element) => {
-      if (service!.revisionFiles.length > 0) {
-        if (element.name === UserServiceStatus.revisiondelivered) {
-          element.state = ServiceStatusObjectState.completed;
-        }
-      }
       if (element.name === UserServiceStatus.completed) {
         element.state = ServiceStatusObjectState.completed;
       }
@@ -640,6 +623,7 @@ class UserService {
         $set: {
           "services.$.statusType": UserServiceStatus.completed,
           "services.$.completionDate": new Date().toUTCString(),
+          "services.$.status": newStatus,
         },
       }
     );
@@ -658,19 +642,9 @@ class UserService {
       "services._id": serviceId,
     }).select("services");
 
-    if (!usersevice) {
-      throw new ApolloError("Something went wrong, try again later");
-    }
-
-    const serviceIndex = usersevice.services.findIndex(
+    const service = usersevice?.services?.find(
       (el) => String(el._id) === serviceId
     );
-
-    let service: UserServices | undefined = undefined;
-
-    if (serviceIndex >= 0) {
-      service = usersevice?.services[serviceIndex];
-    }
 
     if (!service) {
       throw new ApolloError("Something went wrong, try again later");
@@ -680,7 +654,7 @@ class UserService {
       throw new ApolloError("You have exhausted all your revision requests");
     }
 
-    if (service.revisionFiles.length + 1 !== rNum) {
+    if (service.revisionFiles.length !== rNum) {
       throw new ApolloError("Invalid request number");
     }
 
@@ -709,6 +683,10 @@ class UserService {
       .toDate()
       .toUTCString();
 
+    // const numberOfPrevRevision = await UserModel.findOne({
+    //   "services._id": serviceId
+    // }).select("services.")
+    // Need to add check for number of revision is surpassed or not
     await UserModel.findOneAndUpdate(
       {
         "services._id": serviceId,
