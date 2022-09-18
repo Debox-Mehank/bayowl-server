@@ -556,11 +556,26 @@ class UserService {
   }
 
   async approveProject(serviceId: String): Promise<boolean> {
+    let newStatus = [...defaultStatus];
+
+    newStatus.forEach((element) => {
+      if (element.name === UserServiceStatus.underreview) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+      if (element.name === UserServiceStatus.workinprogress) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+      if (element.name === UserServiceStatus.delivered) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+    });
+
     await UserModel.findOneAndUpdate(
       { "services._id": serviceId },
       {
         $set: {
           "services.$.statusType": UserServiceStatus.delivered,
+          "services.$.status": newStatus,
         },
       }
     );
@@ -568,16 +583,50 @@ class UserService {
   }
 
   async addDeliverFiles(serviceId: string, url: string) {
-    await UserModel.findOneAndUpdate(
+    const update = await UserModel.updateOne(
       { "services._id": serviceId },
       {
         $set: {
           "services.$.deliveredFiles": [url],
+          "services.$.statusType": UserServiceStatus.underreviewinternal,
         },
       }
-      // { upsert: true } //should remove
     );
-    return true;
+    return update.acknowledged;
+  }
+
+  async markCompleted(serviceId: string) {
+    const usersevice = await UserModel.findOne({ "services._id": serviceId });
+    const service = usersevice?.services?.[0];
+
+    if (!service) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    let newStatus = [...service.status];
+
+    newStatus.forEach((element) => {
+      if (service.revisionFiles.length > 0) {
+        if (element.name === UserServiceStatus.revisiondelivered) {
+          element.state = ServiceStatusObjectState.completed;
+        }
+      }
+      if (element.name === UserServiceStatus.completed) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+    });
+
+    const update = await UserModel.updateOne(
+      { "services._id": serviceId },
+      {
+        $set: {
+          "services.$.statusType": UserServiceStatus.completed,
+          "services.$.completionDate": new Date().toUTCString(),
+        },
+      }
+    );
+
+    return update.acknowledged;
   }
 
   async initFileUpload(fileName: string): Promise<FileUploadResponse> {
