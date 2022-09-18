@@ -104,7 +104,9 @@ class PaymentService {
           orderId: order.id,
         });
 
-        return JSON.stringify(order);
+        const resp = { ...order, serviceId: finalService._id };
+
+        return JSON.stringify(resp);
       } catch (error: any) {
         console.error("ERROR_INITPAYMENT : " + error.toString());
         throw new ApolloError(error);
@@ -114,21 +116,20 @@ class PaymentService {
     }
   }
 
-  async verifyPayment(
-    ctx: Context,
-    orderId: string,
-    paymentId: string,
-    signature: string
-  ) {
-    const sign = `${orderId}|${paymentId}`;
-    const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(sign.toString())
-      .digest("hex");
+  async removeService(serviceId: string, context: Context) {
+    try {
+      const update = await UserModel.updateOne(
+        { _id: context.user },
+        { $pull: { services: { _id: serviceId } } },
+        { multi: true }
+      );
 
-    if (signature === expectedSign) {
+      return update.acknowledged;
+    } catch (error: any) {
+      throw new ApolloError(error.toString());
     }
   }
+
   async getAllPayment(): Promise<Payment[]> {
     return await PaymentModel.find({});
   }

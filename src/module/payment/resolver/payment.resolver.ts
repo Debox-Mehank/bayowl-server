@@ -13,12 +13,20 @@ export default class PaymentResolver {
 
   // Initiate Payment
   @Query(() => String)
+  @UseMiddleware([isAuth])
   initiatePayment(
     @Ctx() ctx: Context,
     @Arg("service") service: UserServicesInput,
     @Arg("email", { nullable: true }) email?: string
   ) {
     return this.service.initiatePayment(ctx, service, email);
+  }
+
+  // Remove Service
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth])
+  removeService(@Ctx() ctx: Context, @Arg("serviceId") serviceId: string) {
+    return this.service.removeService(serviceId, ctx);
   }
 
   @Query(() => [Payment])
