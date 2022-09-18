@@ -640,6 +640,17 @@ class UserService {
     rNum: number,
     ctx: Context
   ) {
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    }).select("services");
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
     const numOfService = await UserModel.findOne({
       _id: ctx.user,
       "services._id": serviceId,
@@ -648,6 +659,14 @@ class UserService {
     if (!numOfService || numOfService.services.length === 0) {
       throw new ApolloError("You can't access this service");
     }
+
+    let newStatus = [...service.status];
+
+    newStatus.forEach((element) => {
+      if (element.name === UserServiceStatus.revisionrequest) {
+        element.state = ServiceStatusObjectState.current;
+      }
+    });
     // const numberOfPrevRevision = await UserModel.findOne({
     //   "services._id": serviceId
     // }).select("services.")
@@ -665,6 +684,7 @@ class UserService {
         },
         $set: {
           "services.$.statusType": UserServiceStatus.revisionrequest,
+          "services.$.status": newStatus,
         },
         $inc: {
           "services.$.requestReuploadCounter": 1,
