@@ -28,6 +28,7 @@ import {
 } from "../interface/user.interface";
 import _ from "lodash";
 import { CreateMultipartUploadRequest } from "aws-sdk/clients/s3";
+import { AdminRole } from "../../admin/schema/admin.schema";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
@@ -573,9 +574,58 @@ class UserService {
       {
         $set: {
           "services.$.deliveredFiles": [url],
+          "services.$.statusType": UserServiceStatus.underreviewinternal,
         },
       }
       // { upsert: true } //should remove
+    );
+    return true;
+  }
+
+  // async addRevisionFile(
+  //   serviceId: string,
+  //   fileUrl: string,
+  //   desc: string,
+  //   ctx: Context
+  // ) {
+  //   if (ctx.role !== AdminRole.master)
+  //     throw new ApolloError("You are unauthorized");
+  //   await UserModel.findOneAndUpdate(
+  //     {
+  //       "services._id": serviceId,
+  //     },
+  //     {
+  //       $push: {
+  //         "services.$.revisionNotesByMaster": note,
+  //         "services.$.revisionTimeByMaster": new Date(),
+  //         "services.$.statusType": UserServiceStatus.workinprogress,
+  //       },
+  //     }
+  //   );
+  //   return true;
+  // }
+
+  async addRevisionNotesByMaster(
+    note: string,
+    serviceId: string,
+    ctx: Context
+  ) {
+    if (ctx.role !== AdminRole.master)
+      throw new ApolloError("You are unauthorized");
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $set: {
+          "services.$.revisionNotesByMaster": note,
+          "services.$.revisionTimeByMaster": new Date(),
+          "services.$.statusType": UserServiceStatus.workinprogress,
+        },
+        $inc: {
+          "services.$.numberOfRevisionsByMaster": 1,
+        },
+      }
     );
     return true;
   }
