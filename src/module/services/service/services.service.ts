@@ -191,6 +191,9 @@ class ServicesService {
             "services.$.reuploadNote": reuploadNote,
             "services.$.reupload": new Date().toUTCString(),
           },
+          $inc: {
+            "services.$.requestReuploadCounter": 1,
+          },
         }
       );
 

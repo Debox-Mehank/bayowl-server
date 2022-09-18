@@ -29,6 +29,7 @@ import {
 import _ from "lodash";
 import { CreateMultipartUploadRequest } from "aws-sdk/clients/s3";
 import { AdminRole } from "../../admin/schema/admin.schema";
+import moment from "moment";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
@@ -638,6 +639,7 @@ class UserService {
     serviceId: string,
     desc: string,
     rNum: number,
+    revisionFor: number,
     ctx: Context
   ) {
     const usersevice = await UserModel.findOne({
@@ -652,11 +654,11 @@ class UserService {
       throw new ApolloError("Something went wrong, try again later");
     }
 
-    if (++service.requestReuploadCounter > service.setOfRevisions) {
+    if (service.revisionFiles.length - 1 > service.setOfRevisions) {
       throw new ApolloError("You have exhausted all your revision requests");
     }
 
-    if (++service.requestReuploadCounter !== rNum) {
+    if (service.revisionFiles.length + 1 !== rNum) {
       throw new ApolloError("Invalid request number");
     }
 
@@ -675,7 +677,16 @@ class UserService {
       if (element.name === UserServiceStatus.revisionrequest) {
         element.state = ServiceStatusObjectState.current;
       }
+      if (element.name === UserServiceStatus.revisiondelivered) {
+        element.state = ServiceStatusObjectState.pending;
+      }
     });
+
+    const estDeliveryTime = moment(service.estDeliveryDate)
+      .add(service.revisionsDelivery, "days")
+      .toDate()
+      .toUTCString();
+
     // const numberOfPrevRevision = await UserModel.findOne({
     //   "services._id": serviceId
     // }).select("services.")
@@ -689,14 +700,13 @@ class UserService {
           "services.$.revisionFiles": {
             description: desc,
             revision: rNum,
+            revisionFor: revisionFor,
           },
         },
         $set: {
           "services.$.statusType": UserServiceStatus.revisionrequest,
           "services.$.status": newStatus,
-        },
-        $inc: {
-          "services.$.requestReuploadCounter": 1,
+          "services.$.estDeliveryDate": estDeliveryTime,
         },
       }
     );
@@ -731,6 +741,17 @@ class UserService {
       if (ind.revision === rNum) ind.file = fileUrl;
     });
 
+    let newStatus = [...service.status];
+
+    newStatus.forEach((element) => {
+      if (element.name === UserServiceStatus.revisionrequest) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+      if (element.name === UserServiceStatus.revisiondelivered) {
+        element.state = ServiceStatusObjectState.completed;
+      }
+    });
+
     if (!revision) {
       throw new ApolloError("Revision not found");
     }
@@ -742,6 +763,7 @@ class UserService {
         $set: {
           "services.$.revisionFiles": revision,
           "services.$.statusType": UserServiceStatus.revisiondelivered,
+          "services.$.status": newStatus,
         },
       }
     );

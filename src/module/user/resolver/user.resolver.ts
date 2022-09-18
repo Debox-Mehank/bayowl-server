@@ -88,15 +88,22 @@ export default class UserResolver {
     return this.service.approveProject(serviceId);
   }
 
-  @Mutation(() => Boolean)
+  @Query(() => Boolean)
   @UseMiddleware([isAuth])
   requestRevision(
     @Arg("serviceId") serviceId: string,
     @Arg("description") desc: string,
     @Arg("revisionNumber") rNum: number,
+    @Arg("revisionForNumber") rforNum: number,
     @Ctx() context: Context
   ) {
-    return this.service.requestRevision(serviceId, desc, rNum, context);
+    return this.service.requestRevision(
+      serviceId,
+      desc,
+      rNum,
+      rforNum,
+      context
+    );
   }
 
   @Mutation(() => Boolean)

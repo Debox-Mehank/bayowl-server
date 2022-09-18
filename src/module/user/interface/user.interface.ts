@@ -55,6 +55,10 @@ export class RevisionFiles {
   @Field(() => Number, { nullable: false })
   @prop({ default: 1 })
   revision: number;
+
+  @Field(() => Number, { nullable: false })
+  @prop({ default: 0 })
+  revisionFor: number;
 }
 
 @ObjectType()
