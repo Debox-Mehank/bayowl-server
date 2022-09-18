@@ -46,4 +46,10 @@ export default class DashboardContentResolver {
   toggleDashboardContent(@Arg("id") id: string) {
     return this.service.toggleDashboardContent(id);
   }
+
+  @Query(() => String)
+  @UseMiddleware([isAuth, isAdmin])
+  getContentUploadUrl(@Arg("fileName") fileName: string) {
+    return this.service.getContentUploadUrl(fileName);
+  }
 }

@@ -186,6 +186,12 @@ export default class UserResolver {
 
   @Query(() => Boolean)
   @UseMiddleware([isAuth])
+  markCompleted(@Arg("serviceId") serviceId: string): Promise<boolean> {
+    return this.service.markCompleted(serviceId);
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth])
   uploadFilesForService(
     @Ctx() context: Context,
     @Arg("serviceId") serviceId: string,

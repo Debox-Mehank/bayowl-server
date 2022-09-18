@@ -26,10 +26,6 @@ export class DashboardContent {
 
   @Field(() => String, { nullable: false })
   @prop({ required: true, trim: true })
-  text: string;
-
-  @Field(() => String, { nullable: false })
-  @prop({ required: true, trim: true })
   image: string;
 
   @Field(() => Boolean)

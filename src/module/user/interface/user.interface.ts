@@ -165,6 +165,10 @@ export class UserServices extends Services {
   @prop({ default: null })
   reupload: Date;
 
+  @Field(() => Number, { nullable: true })
+  @prop({ default: 0 })
+  requestReuploadCounter: number;
+
   @Field(() => String, { nullable: true })
   @prop({ default: null })
   notes: string;
@@ -188,6 +192,10 @@ export class UserServices extends Services {
   @Field(() => Date, { nullable: true })
   @prop({ default: null })
   estDeliveryDate: Date;
+
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  completionDate: Date;
 
   @Field(() => String, { nullable: true })
   @prop({ default: null })

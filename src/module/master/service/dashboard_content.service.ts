@@ -1,10 +1,16 @@
 import { ApolloError } from "apollo-server-express";
 import Context from "../../../interface/context";
+import aws from "aws-sdk";
 import { DashboardContentInput } from "../interface/dashboard_content.interface";
 import {
   DashboardContent,
   DashboardContentModel,
 } from "../schema/dashboard_content.schema";
+
+const region = "ap-south-1";
+const bucketName = "bayowl-online-services";
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
 
 class DashboardContentService {
   async getAll(): Promise<DashboardContent[]> {
@@ -48,7 +54,7 @@ class DashboardContentService {
     try {
       const updatedContent = await DashboardContentModel.updateOne(
         { _id: id },
-        { $set: { text: input.text, image: input.image } }
+        { $set: { image: input.image } }
       );
       return updatedContent.acknowledged;
     } catch (error: any) {
@@ -66,6 +72,25 @@ class DashboardContentService {
     } catch (error: any) {
       throw new ApolloError(error.toString());
     }
+  }
+
+  async getContentUploadUrl(fileName: string): Promise<string> {
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+
+    const params = {
+      Bucket: bucketName,
+      Key: fileName,
+      Expires: 60,
+    };
+
+    const uploadURL = await s3.getSignedUrlPromise("putObject", params);
+
+    return uploadURL;
   }
 }
 
