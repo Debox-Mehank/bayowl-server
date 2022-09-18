@@ -755,22 +755,56 @@ class UserService {
   ) {
     if (ctx.role !== AdminRole.master)
       throw new ApolloError("You are unauthorized");
-    await UserModel.findOneAndUpdate(
-      {
-        "services._id": serviceId,
-      },
-      {
-        $set: {
-          "services.$.revisionNotesByMaster": note,
-          "services.$.revisionTimeByMaster": new Date(),
-          "services.$.statusType": UserServiceStatus.workinprogress,
-        },
-        $inc: {
-          "services.$.numberOfRevisionsByMaster": 1,
-        },
+
+    const s3 = new aws.S3({
+      region,
+      accessKeyId,
+      secretAccessKey: accessKeySecret,
+      signatureVersion: "v4",
+    });
+
+    // Getting File Name
+    const deliveredFileName = `deliveredFiles_${serviceId}.zip`;
+
+    // Deleting from S3
+    try {
+      const { Deleted, Errors } = await s3
+        .deleteObjects({
+          Bucket: bucketName,
+          Delete: {
+            Objects: [{ Key: deliveredFileName }],
+            Quiet: false,
+          },
+        })
+        .promise();
+
+      if (Errors && Errors.length > 0)
+        throw new ApolloError(Errors.map((el) => el.Message ?? "").join(","));
+
+      if (!Deleted) {
+        return false;
       }
-    );
-    return true;
+
+      await UserModel.findOneAndUpdate(
+        {
+          "services._id": serviceId,
+        },
+        {
+          $set: {
+            "services.$.deliveredFiles": [],
+            "services.$.revisionNotesByMaster": note,
+            "services.$.revisionTimeByMaster": new Date(),
+            "services.$.statusType": UserServiceStatus.workinprogress,
+          },
+          $inc: {
+            "services.$.numberOfRevisionsByMaster": 1,
+          },
+        }
+      );
+      return true;
+    } catch (error: any) {
+      throw new ApolloError(error.toString());
+    }
   }
 
   async initFileUpload(fileName: string): Promise<FileUploadResponse> {
