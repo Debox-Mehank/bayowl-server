@@ -5,7 +5,10 @@ import Razorpay from "razorpay";
 import Context from "../../../interface/context";
 import { sendUserVerificationEmail } from "../../../mails";
 import { getUserEmail } from "../../user/helper";
-import { UserServicesInput } from "../../user/interface/user.interface";
+import {
+  defaultStatus,
+  UserServicesInput,
+} from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
 import { Payment, PaymentModel } from "../schema/payment.schema";
 
@@ -91,7 +94,7 @@ class PaymentService {
           { _id: ctx.user },
           {
             $addToSet: {
-              services: finalService,
+              services: { ...finalService, status: [...defaultStatus] },
             },
           }
         );
