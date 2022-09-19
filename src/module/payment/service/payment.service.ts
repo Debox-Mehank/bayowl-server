@@ -90,6 +90,8 @@ class PaymentService {
 
         const finalService = { _id: new mongoose.Types.ObjectId(), ...service };
 
+        console.log("FINAL SERVICE : ", JSON.stringify(finalService));
+
         await UserModel.findOneAndUpdate(
           { _id: ctx.user },
           {
