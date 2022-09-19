@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "rimraf ./dist && tsc",
+    "build": "rm -rf deploy.zip && rimraf ./dist && tsc && zip -r deploy.zip dist/ package-lock.json package.json",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "dependencies": {

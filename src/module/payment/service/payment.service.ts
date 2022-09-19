@@ -90,15 +90,14 @@ class PaymentService {
 
         const finalService = { _id: new mongoose.Types.ObjectId(), ...service };
 
-        console.log("FINAL SERVICE : ", JSON.stringify(finalService));
-
-        await UserModel.findOneAndUpdate(
+        const newUserService = await UserModel.findOneAndUpdate(
           { _id: ctx.user },
           {
             $addToSet: {
               services: { ...finalService, status: [...defaultStatus] },
             },
-          }
+          },
+          { new: true }
         );
 
         await PaymentModel.create({
