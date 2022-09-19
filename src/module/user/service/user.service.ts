@@ -650,11 +650,11 @@ class UserService {
       throw new ApolloError("Something went wrong, try again later");
     }
 
-    if (service.revisionFiles.length - 1 > service.setOfRevisions) {
+    if (rNum > service.setOfRevisions) {
       throw new ApolloError("You have exhausted all your revision requests");
     }
 
-    if (service.revisionFiles.length !== rNum) {
+    if (service.revisionFiles.length + 1 !== rNum) {
       throw new ApolloError("Invalid request number");
     }
 
