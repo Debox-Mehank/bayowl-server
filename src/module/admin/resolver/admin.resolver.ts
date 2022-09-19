@@ -1,10 +1,18 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import Context from "../../../interface/context";
 import { User } from "../../user/schema/user.schema";
 import { AdminLoginInput, AdminRegisterInput } from "../interface/admin.input";
 import { Admin } from "../schema/admin.schema";
 import AdminService from "../service/admin.service";
 import { DashboardInterfaceClass } from "../interface/dashboard.interface";
+import { isAdmin, isAuth } from "../../../middleware/auth";
 @Resolver()
 export default class AdminResolver {
   constructor(private service: AdminService) {
@@ -14,6 +22,15 @@ export default class AdminResolver {
   @Query(() => [User])
   getAllUser(): Promise<User[]> {
     return this.service.getAllUser();
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware(isAuth, isAdmin)
+  resetPassword(
+    @Arg("id") id: string,
+    @Arg("password") password: string
+  ): Promise<boolean> {
+    return this.service.resetPassword(id, password);
   }
 
   @Query(() => Admin, { nullable: true })

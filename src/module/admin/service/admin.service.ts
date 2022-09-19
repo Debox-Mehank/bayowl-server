@@ -33,6 +33,25 @@ class AdminService {
     }
   }
 
+  async resetPassword(id: string, password: string): Promise<boolean> {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const hash = bcrypt.hashSync(password, salt);
+      const hashedPassword = hash;
+
+      await AdminModel.findOneAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            password: hashedPassword,
+          },
+        }
+      );
+      return true;
+    } catch (error) {
+      throw new ApolloError(error as string);
+    }
+  }
   async allAdmin(): Promise<Admin[]> {
     return await AdminModel.find({});
   }
