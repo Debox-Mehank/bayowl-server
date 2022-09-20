@@ -578,6 +578,7 @@ class UserService {
         $set: {
           "services.$.statusType": UserServiceStatus.delivered,
           "services.$.status": newStatus,
+          "services.$.masterProjectApprovalTime": new Date().toUTCString(),
         },
       }
     );

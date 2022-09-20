@@ -157,6 +157,10 @@ export class UserServices extends Services {
   @prop({ default: null })
   assignedTime: Date;
 
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  masterProjectApprovalTime: Date;
+
   @Field(() => UserServiceStatus, { nullable: false })
   @prop({ default: UserServiceStatus.pendingupload })
   statusType: UserServiceStatus;
