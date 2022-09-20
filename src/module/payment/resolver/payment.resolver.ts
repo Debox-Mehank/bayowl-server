@@ -16,10 +16,9 @@ export default class PaymentResolver {
   @UseMiddleware([isAuth])
   initiatePayment(
     @Ctx() ctx: Context,
-    @Arg("service") service: UserServicesInput,
-    @Arg("email", { nullable: true }) email?: string
+    @Arg("service") service: UserServicesInput
   ) {
-    return this.service.initiatePayment(ctx, service, email);
+    return this.service.initiatePayment(ctx, service);
   }
 
   // Remove Service
