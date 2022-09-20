@@ -698,6 +698,7 @@ class UserService {
             description: desc,
             revision: rNum,
             revisionFor: revisionFor,
+            revisionTime: new Date().toUTCString(),
           },
         },
         $set: {

@@ -56,6 +56,10 @@ export class RevisionFiles {
   @prop({ default: 1 })
   revision: number;
 
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  revisionTime: Date;
+
   @Field(() => Number, { nullable: false })
   @prop({ default: 0 })
   revisionFor: number;
