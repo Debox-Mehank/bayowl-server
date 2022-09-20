@@ -212,6 +212,36 @@ export class UserServices extends Services {
   @Field(() => String, { nullable: true })
   @prop({ default: null })
   reuploadNote: string;
+
+  @Field(() => String, { nullable: true })
+  @prop({
+    type: String,
+    default: null,
+  })
+  wrokingFile: string;
+
+  @Field(() => Boolean)
+  @prop({ default: false })
+  addOnExtraRevision: boolean;
+
+  @Field(() => Boolean)
+  @prop({ default: false })
+  addOnExportsBusStems: boolean;
+
+  @Field(() => Boolean)
+  @prop({ default: false })
+  addOnExportsMultitrack: boolean;
+
+  @Field(() => String, { nullable: true })
+  @prop({
+    type: String,
+    default: null,
+  })
+  addOnExportsFile: string;
+
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  paidAt: Date;
 }
 
 @InputType()

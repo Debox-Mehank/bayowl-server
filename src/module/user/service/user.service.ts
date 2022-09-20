@@ -598,6 +598,30 @@ class UserService {
     return update.acknowledged;
   }
 
+  async addWorkingFile(serviceId: string, url: string) {
+    const update = await UserModel.updateOne(
+      { "services._id": serviceId },
+      {
+        $set: {
+          "services.$.wrokingFile": url,
+        },
+      }
+    );
+    return update.acknowledged;
+  }
+
+  async addAddOnExportsFile(serviceId: string, url: string) {
+    const update = await UserModel.updateOne(
+      { "services._id": serviceId },
+      {
+        $set: {
+          "services.$.addOnExportsFile": url,
+        },
+      }
+    );
+    return update.acknowledged;
+  }
+
   async markCompleted(serviceId: string) {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,

@@ -94,7 +94,11 @@ class PaymentService {
           { _id: ctx.user },
           {
             $addToSet: {
-              services: { ...finalService, status: [...defaultStatus] },
+              services: {
+                ...finalService,
+                status: [...defaultStatus],
+                paidAt: new Date().toUTCString(),
+              },
             },
           },
           { new: true }
@@ -137,6 +141,8 @@ class PaymentService {
   async getAllPayment(): Promise<Payment[]> {
     return await PaymentModel.find({});
   }
+
+  async initiateAddOnPayment(serviceId: string, ctx: Context) {}
 }
 
 export default PaymentService;

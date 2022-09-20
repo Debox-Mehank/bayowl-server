@@ -135,6 +135,24 @@ export default class UserResolver {
     return this.service.addDeliverFiles(serviceId, url);
   }
 
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  addWorkingFile(
+    @Arg("serviceId") serviceId: string,
+    @Arg("url") url: string
+  ): Promise<Boolean> {
+    return this.service.addWorkingFile(serviceId, url);
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  addAddOnExportsFile(
+    @Arg("serviceId") serviceId: string,
+    @Arg("url") url: string
+  ): Promise<Boolean> {
+    return this.service.addAddOnExportsFile(serviceId, url);
+  }
+
   // User logout
   @Query(() => Boolean)
   @UseMiddleware([isAuth])
