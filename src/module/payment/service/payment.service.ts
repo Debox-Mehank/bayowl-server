@@ -3,7 +3,7 @@ import { ApolloError } from "apollo-server-express";
 import crypto from "crypto";
 import Razorpay from "razorpay";
 import Context from "../../../interface/context";
-import { sendUserVerificationEmail } from "../../../mails";
+import { sendUserVerificationEmail, servicePurchaseMail } from "../../../mails";
 import { getUserEmail } from "../../user/helper";
 import {
   defaultStatus,
@@ -140,6 +140,12 @@ class PaymentService {
         });
 
         const resp = { ...order, serviceId: finalService._id };
+
+        // await servicePurchaseMail(
+        //   email?.email ?? "",
+        //   email?.name ?? "",
+        //   service.serviceName
+        // );
 
         return JSON.stringify(resp);
       } catch (error: any) {

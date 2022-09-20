@@ -1,13 +1,32 @@
 import nodemailer, { SendMailOptions } from "nodemailer";
+import hbs, {
+  HbsTransporter,
+  NodemailerExpressHandlebarsOptions,
+  TemplateOptions,
+} from "nodemailer-express-handlebars";
+import path from "path";
 import { signJwt } from "../utils/auth";
 
-const transporter = nodemailer.createTransport({
+const MANAGEMENT_MAIL = process.env.MANAGEMENT_MAIL;
+const MASTER_MAIL = process.env.MASTER_MAIL;
+
+const transporter: HbsTransporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.AUTH_EMAIL,
     pass: process.env.AUTH_PASS,
   },
 });
+
+const hbsOptions: NodemailerExpressHandlebarsOptions = {
+  extName: ".hbs",
+  viewEngine: {
+    extname: ".html",
+    partialsDir: path.join(__dirname),
+    defaultLayout: false,
+  },
+  viewPath: path.join(__dirname),
+};
 
 export const sendUserVerificationEmail = async ({
   email,
@@ -59,5 +78,38 @@ export const sendUserCreateAccountMail = async ({
     return verificationLink;
   } catch (error) {
     console.log("Error in sending create account mail: " + error);
+  }
+};
+
+export const servicePurchaseMail = async (
+  email: string,
+  customer: string,
+  service: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "servicepurchase",
+    subject: "Service Purchased",
+    context: {
+      customer: customer,
+      service: service,
+    },
+  };
+  const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "servicepurchasea",
+    subject: "Service Purchased",
+    context: {
+      customer: customer,
+      service: service,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptionsAdmin);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
   }
 };

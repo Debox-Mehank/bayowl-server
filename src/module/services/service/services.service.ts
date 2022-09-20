@@ -141,7 +141,7 @@ class ServicesService {
 
     // Getting File Name
     const uploadFileName = `uploadedFiles_${serviceId}.zip`;
-    const referenceFileName = `referenceFiles_${serviceId}.zip`;
+    // const referenceFileName = `referenceFiles_${serviceId}.zip`;
 
     // Deleting from S3
     try {
@@ -149,7 +149,7 @@ class ServicesService {
         .deleteObjects({
           Bucket: bucketName,
           Delete: {
-            Objects: [{ Key: uploadFileName }, { Key: referenceFileName }],
+            Objects: [{ Key: uploadFileName }],
             Quiet: false,
           },
         })
@@ -185,7 +185,7 @@ class ServicesService {
         {
           $set: {
             "services.$.uploadedFiles": [],
-            "services.$.referenceFiles": [],
+            // "services.$.referenceFiles": [],
             "services.$.statusType": UserServiceStatus.pendingupload,
             "services.$.status": newStatus,
             "services.$.reuploadNote": reuploadNote,
