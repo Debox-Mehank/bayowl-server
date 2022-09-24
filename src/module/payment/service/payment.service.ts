@@ -13,6 +13,12 @@ import {
 } from "../../user/interface/user.interface";
 import { UserModel } from "../../user/schema/user.schema";
 import { Payment, PaymentModel } from "../schema/payment.schema";
+import {
+  PaymentConfig,
+  PaymentConfigEnum,
+  PaymentConfigInput,
+  PaymentConfigModel,
+} from "../schema/payment_config.schema";
 
 class PaymentService {
   async initiatePayment(ctx: Context, service: UserServicesInput) {
@@ -176,6 +182,59 @@ class PaymentService {
   }
 
   async initiateAddOnPayment(serviceId: string, ctx: Context) {}
+
+  async getPaymentConfig(): Promise<PaymentConfig[]> {
+    const data = await PaymentConfigModel.find({});
+    return data;
+  }
+
+  async getGstStatus(): Promise<Boolean> {
+    const data = await PaymentConfigModel.findOne({
+      type: PaymentConfigEnum.gst,
+    });
+    return data?.value && data.value > 0 ? true : false;
+  }
+
+  async addPaymentConfig(
+    input: PaymentConfigInput,
+    context: Context
+  ): Promise<Boolean> {
+    const data = await PaymentConfigModel.create({
+      ...input,
+      lastUpdatedBy: context.user,
+    });
+    return true;
+  }
+
+  async updatePaymentConfig(ctx: Context, gst: boolean): Promise<boolean> {
+    const update = await PaymentConfigModel.updateMany(
+      { type: PaymentConfigEnum.gst },
+      {
+        $set: {
+          active: gst,
+          lastUpdatedBy: ctx.user,
+        },
+      }
+    );
+    return update.acknowledged;
+  }
+
+  async updateFreeUser(
+    ctx: Context,
+    free: boolean,
+    id: string
+  ): Promise<boolean> {
+    const update = await UserModel.updateOne(
+      { _id: id },
+      {
+        $set: {
+          free: free,
+          lastUpdatedBy: ctx.user,
+        },
+      }
+    );
+    return update.acknowledged;
+  }
 }
 
 export default PaymentService;

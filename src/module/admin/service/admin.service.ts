@@ -6,7 +6,10 @@ import bcrypt from "bcrypt";
 import { signJwt } from "../../../utils/auth";
 import Context from "../../../interface/context";
 import { DashboardEnum } from "../interface/dashboard.interface";
-import { UserServiceStatus } from "../../user/interface/user.interface";
+import {
+  UserServices,
+  UserServiceStatus,
+} from "../../user/interface/user.interface";
 
 class AdminService {
   async getAllUser(): Promise<User[]> {
@@ -61,6 +64,14 @@ class AdminService {
   }
 
   async dashboardMet() {
+    const services: UserServices[] = await UserModel.aggregate([
+      { $unwind: "$services" },
+      {
+        $replaceRoot: {
+          newRoot: "$services",
+        },
+      },
+    ]);
     return [
       {
         label: DashboardEnum.NumberOfCustomersRegistered,
@@ -74,24 +85,24 @@ class AdminService {
       },
       {
         label: DashboardEnum.NumberOfServicesPendingAcceptance,
-        data: await UserModel.countDocuments({
-          $or: [
-            { "services.statusType": UserServiceStatus.underreviewinternal },
-            { "services.statusType": UserServiceStatus.underreview },
-          ],
-        }),
+        data: services.filter((el) =>
+          [
+            UserServiceStatus.underreviewinternal,
+            UserServiceStatus.underreview,
+          ].includes(el.statusType)
+        ).length,
       },
       {
         label: DashboardEnum.NumberOfServicesInProgress,
-        data: await UserModel.countDocuments({
-          "services.statusType": UserServiceStatus.workinprogress,
-        }),
+        data: services.filter((el) =>
+          [UserServiceStatus.workinprogress].includes(el.statusType)
+        ).length,
       },
       {
         label: DashboardEnum.NumberOfServicesCompleted,
-        data: await UserModel.countDocuments({
-          "services.statusType": UserServiceStatus.completed,
-        }),
+        data: services.filter((el) =>
+          [UserServiceStatus.completed].includes(el.statusType)
+        ).length,
       },
     ];
   }

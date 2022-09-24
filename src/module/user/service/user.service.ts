@@ -13,6 +13,7 @@ import {
   getUserByEmail,
 } from "../helper";
 import { User, UserModel } from "../schema/user.schema";
+import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { sendUserVerificationEmail } from "../../../mails";
 import { VerificationTokenType } from "../../../interface/jwt";
@@ -30,6 +31,7 @@ import _ from "lodash";
 import { CreateMultipartUploadRequest } from "aws-sdk/clients/s3";
 import { AdminRole } from "../../admin/schema/admin.schema";
 import moment from "moment";
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
   clientId: GOOGLE_CLIENT_ID,
@@ -43,6 +45,30 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
 
 class UserService {
+  private async setAuthCookie(id: string, context: Context) {
+    const authToken = signJwt({
+      user: id,
+      role: "user",
+    });
+
+    // create cookie
+    if (process.env.NODE_ENV === "production") {
+      context.res!.cookie("accessToken", authToken, {
+        maxAge: 3.154e10,
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        domain: ".bayowl.studio",
+        path: "/",
+      });
+    } else {
+      context.res!.cookie("accessToken", authToken, {
+        maxAge: 3.154e10,
+        httpOnly: true,
+      });
+    }
+  }
+
   async login(
     input: { email: string; password: string; token?: string },
     context: Context
@@ -61,7 +87,36 @@ class UserService {
       const user = await getUserByEmail(email!);
 
       if (!user) {
-        throw new ApolloError("No account found for this email id");
+        let OAuth2 = google.auth.OAuth2;
+        let oauth2Client = new OAuth2();
+        oauth2Client.setCredentials({ access_token: input.token ?? "" });
+        let oauth2 = google.oauth2({
+          auth: oauth2Client,
+          version: "v2",
+        });
+        const {
+          data: { name },
+          status,
+        } = await oauth2.userinfo.get();
+
+        if (!name) {
+          return false;
+        }
+
+        const createdUser = await UserModel.create({
+          name: name,
+          email: email,
+          accountVerified: true,
+        });
+
+        await this.setAuthCookie(createdUser._id, context);
+
+        await UserModel.findOneAndUpdate(
+          { _id: createdUser._id },
+          { $set: { lastLoggedIn: new Date() } }
+        );
+
+        return true;
       }
 
       // check user email verification status
@@ -69,28 +124,7 @@ class UserService {
         throw new ApolloError("Looks like your email is not yet verified.");
       }
 
-      // create jwt
-      const authToken = signJwt({
-        user: user._id,
-        role: "user",
-      });
-
-      // create cookie
-      if (process.env.NODE_ENV === "production") {
-        context.res!.cookie("accessToken", authToken, {
-          maxAge: 3.154e10,
-          httpOnly: true,
-          sameSite: "none",
-          secure: true,
-          domain: ".bayowl.studio",
-          path: "/",
-        });
-      } else {
-        context.res!.cookie("accessToken", authToken, {
-          maxAge: 3.154e10,
-          httpOnly: true,
-        });
-      }
+      await this.setAuthCookie(user._id, context);
 
       await UserModel.findOneAndUpdate(
         { _id: user._id },
@@ -230,7 +264,14 @@ class UserService {
         const user = await getUserByEmail(email!);
 
         if (user) {
-          throw new ApolloError("Account already exists, try to login");
+          await this.setAuthCookie(user._id, context);
+
+          await UserModel.findOneAndUpdate(
+            { _id: user._id },
+            { $set: { lastLoggedIn: new Date() } }
+          );
+
+          return true;
         }
 
         const createdUser = await UserModel.create({
@@ -239,28 +280,7 @@ class UserService {
           accountVerified: true,
         });
 
-        // create jwt
-        const authToken = signJwt({
-          user: createdUser._id,
-          role: "user",
-        });
-
-        // create cookie
-        if (process.env.NODE_ENV === "production") {
-          context.res!.cookie("accessToken", authToken, {
-            maxAge: 3.154e10,
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-            domain: ".bayowl.studio",
-            path: "/",
-          });
-        } else {
-          context.res!.cookie("accessToken", authToken, {
-            maxAge: 3.154e10,
-            httpOnly: true,
-          });
-        }
+        await this.setAuthCookie(createdUser._id, context);
 
         await UserModel.findOneAndUpdate(
           { _id: createdUser._id },
@@ -510,8 +530,21 @@ class UserService {
         .lean()
         .select("_id");
 
+      const services: UserServices[] = await UserModel.aggregate([
+        { $unwind: "$services" },
+        {
+          $replaceRoot: {
+            newRoot: "$services",
+          },
+        },
+      ]);
+
       if (!find) {
         throw new ApolloError("Something went wrong, try again later");
+      }
+
+      if (services.filter((el) => el.projectName === projectName).length > 0) {
+        throw new ApolloError("Project name already in use, try another name");
       }
 
       await UserModel.updateOne(
