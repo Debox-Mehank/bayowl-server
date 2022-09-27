@@ -16,8 +16,10 @@ import {
 } from "../interface/services.input";
 import { Services, ServicesModel } from "../schema/services.schema";
 import moment from "moment";
-import { AdminRole } from "../../admin/schema/admin.schema";
+import { AdminModel, AdminRole } from "../../admin/schema/admin.schema";
 import { isDocument } from "@typegoose/typegoose";
+import { addToCommunicationsQueue } from "../../../bull";
+import { EmailTriggerTypeEnum } from "../../../interface/bull";
 
 const region = "ap-south-1";
 const bucketName = "bayowl-online-services";
@@ -36,6 +38,22 @@ class ServicesService {
     ctx: Context
   ): Promise<boolean> {
     try {
+      const internalAdmin = await AdminModel.findOne({ _id: assignId })
+        .lean()
+        .select("name email");
+
+      const usersevice = await UserModel.findOne({
+        "services._id": serviceId,
+      }).select("services name");
+
+      const service = usersevice?.services?.find(
+        (el) => String(el._id) === serviceId
+      );
+
+      if (!service || !usersevice) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
       await UserModel.findOneAndUpdate(
         { "services._id": serviceId },
         {
@@ -46,6 +64,15 @@ class ServicesService {
           },
         }
       );
+
+      await addToCommunicationsQueue({
+        email: internalAdmin?.email ?? "",
+        service: service.subService ? service.subService : service.serviceName,
+        type: EmailTriggerTypeEnum.serviceassign,
+        customer: usersevice.name ?? "",
+        engineer: internalAdmin?.name ?? "",
+        project: service.projectName,
+      });
       return true;
     } catch (error) {
       throw new ApolloError(error as string);
@@ -126,7 +153,8 @@ class ServicesService {
 
   async requestReupload(
     serviceId: string,
-    reuploadNote: string
+    reuploadNote: string,
+    ctx: Context
   ): Promise<boolean> {
     // Delete previously uploaded files, reference files for this service id from s3 and mongodb
     // change the status back to pending upload with reupload note and reupload date
@@ -174,6 +202,22 @@ class ServicesService {
         }
       });
 
+      const internalAdmin = await AdminModel.findOne({ _id: ctx.user })
+        .lean()
+        .select("name email");
+
+      const usersevice = await UserModel.findOne({
+        "services._id": serviceId,
+      }).select("services name email");
+
+      const service = usersevice?.services?.find(
+        (el) => String(el._id) === serviceId
+      );
+
+      if (!service || !usersevice) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
       const updateUser = await UserModel.updateOne(
         {
           services: {
@@ -197,6 +241,16 @@ class ServicesService {
         }
       );
 
+      await addToCommunicationsQueue({
+        email: usersevice.email ?? "",
+        service: service.subService ? service.subService : service.serviceName,
+        type: EmailTriggerTypeEnum.servicereuploadrequest,
+        customer: usersevice.name ?? "",
+        engineer: internalAdmin?.name ?? "",
+        project: service.projectName,
+        notes: reuploadNote,
+      });
+
       return updateUser.acknowledged;
     } catch (error: any) {
       throw new ApolloError(error.toString());
@@ -205,7 +259,8 @@ class ServicesService {
 
   async confirmUpload(
     serviceId: string,
-    deliveryDays: number
+    deliveryDays: number,
+    ctx: Context
   ): Promise<boolean> {
     try {
       // Update users collection
@@ -227,6 +282,31 @@ class ServicesService {
         .add(deliveryDays, "days")
         .toDate()
         .toUTCString();
+
+      const internalAdmin = await AdminModel.findOne({ _id: ctx.user })
+        .lean()
+        .select("name email");
+
+      const usersevice = await UserModel.findOne({
+        "services._id": serviceId,
+      }).select("services name email");
+
+      const service = usersevice?.services?.find(
+        (el) => String(el._id) === serviceId
+      );
+
+      if (!service || !usersevice) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
+      await addToCommunicationsQueue({
+        email: usersevice.email ?? "",
+        service: service.subService ? service.subService : service.serviceName,
+        type: EmailTriggerTypeEnum.servicereview,
+        customer: usersevice.name ?? "",
+        engineer: internalAdmin?.name ?? "",
+        project: service.projectName,
+      });
 
       const updateUser = await UserModel.updateOne(
         {

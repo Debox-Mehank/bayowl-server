@@ -9,6 +9,7 @@ import { signJwt } from "../utils/auth";
 
 // const MANAGEMENT_MAIL = process.env.MANAGEMENT_MAIL;
 const MASTER_MAIL = process.env.MASTER_MAIL;
+const APP_URL = process.env.APP_URL;
 
 export const transporter: HbsTransporter = nodemailer.createTransport({
   service: "gmail",
@@ -119,7 +120,7 @@ export const servicePurchaseMail = async (
       customer: customer,
       service: service,
       amount: amount.toLocaleString("en-IN"),
-      website: process.env.APP_URL,
+      website: APP_URL,
     },
   };
   const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
@@ -136,6 +137,329 @@ export const servicePurchaseMail = async (
   try {
     await transporter.sendMail(mailOptions);
     await transporter.sendMail(mailOptionsAdmin);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceAssignmentInternal = async (
+  email: string,
+  customer: string,
+  service: string,
+  engineer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-assignment-internal",
+    subject: "Service Assigned",
+    context: {
+      customer: customer,
+      service: service,
+      engineer: engineer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceReviewAcceptance = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  service: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-accepted-customer",
+    subject: "Service Accepted",
+    context: {
+      customer: customer,
+      project: project,
+      website: APP_URL,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-accepted-admin",
+    subject: "Service Accepted",
+    context: {
+      customer: customer,
+      project: project,
+      engineer: engineer,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceReuploadRequest = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  notes: string,
+  service: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-reupload-requested-customer",
+    subject: "Service Reupload Requested",
+    context: {
+      customer: customer,
+      project: project,
+      notes: notes,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-reupload-requested-admin",
+    subject: "Service Reupload Requested",
+    context: {
+      customer: customer,
+      project: project,
+      engineer: engineer,
+      service: service,
+      notes: notes,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceReuploaded = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  service: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-file-reupload-internal",
+    subject: "Service Files Reuploaded",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      service: service,
+      project: project,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-file-reupload-admin",
+    subject: "Service Files Reuploaded",
+    context: {
+      customer: customer,
+      project: project,
+      service: service,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceQACheck = async (
+  customer: string,
+  engineer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-qa-check",
+    subject: "Service QA Check",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceQAReject = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  service: string,
+  notes: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-qa-rejected",
+    subject: "Service QA Rejection",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      project: project,
+      service: service,
+      notes: notes,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const internalRevisionSubmission = async (
+  customer: string,
+  engineer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-internal-rework",
+    subject: "Service Internal Submission",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceDelivery = async (
+  email: string,
+  customer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-delivery",
+    subject: "Service Delivery",
+    context: {
+      customer: customer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceRevisionRequest = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  service: string,
+  notes: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-revision-request-internal",
+    subject: "Service Revision Requested",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      service: service,
+      project: project,
+      notes: notes,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-revision-request-admin",
+    subject: "Service Revision Requested",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      service: service,
+      project: project,
+      notes: notes,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const serviceCompletion = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  notes: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-completion-internal",
+    subject: "Service Completed",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      project: project,
+      notes: notes,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-completion-admin",
+    subject: "Service Completed",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      project: project,
+      notes: notes,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
   } catch (error) {
     console.log("Error in sending mail: " + error);
   }

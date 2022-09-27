@@ -32,8 +32,10 @@ import {
 } from "../interface/user.interface";
 import _ from "lodash";
 import { CreateMultipartUploadRequest } from "aws-sdk/clients/s3";
-import { AdminRole } from "../../admin/schema/admin.schema";
+import { AdminModel, AdminRole } from "../../admin/schema/admin.schema";
 import moment from "moment";
+import { addToCommunicationsQueue } from "../../../bull";
+import { EmailTriggerTypeEnum } from "../../../interface/bull";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client({
@@ -648,6 +650,31 @@ class UserService {
       }
     });
 
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    }).select("services name email");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service || !usersevice) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      type: EmailTriggerTypeEnum.servicedelivery,
+      customer: usersevice.name ?? "",
+      project: service.projectName,
+    });
+
     await UserModel.findOneAndUpdate(
       { "services._id": serviceId },
       {
@@ -662,6 +689,32 @@ class UserService {
   }
 
   async addDeliverFiles(serviceId: string, url: string) {
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    }).select("services name email");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service || !usersevice) {
+      throw new ApolloError("Something went wrong, try again later");
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      type: EmailTriggerTypeEnum.servicesubmitted,
+      customer: usersevice.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+    });
+
     const update = await UserModel.updateOne(
       { "services._id": serviceId },
       {
@@ -964,6 +1017,34 @@ class UserService {
         return false;
       }
 
+      const usersevice = await UserModel.findOne({
+        "services._id": serviceId,
+      }).select("services name email");
+
+      const service = usersevice?.services?.find(
+        (el) => String(el._id) === serviceId
+      );
+
+      if (!service || !usersevice) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
+      const internalAdmin = await AdminModel.findOne({
+        _id: service.assignedTo,
+      })
+        .lean()
+        .select("name email");
+
+      await addToCommunicationsQueue({
+        email: internalAdmin?.email ?? "",
+        service: service.subService ? service.subService : service.serviceName,
+        type: EmailTriggerTypeEnum.servicerejected,
+        customer: usersevice.name ?? "",
+        engineer: internalAdmin?.name ?? "",
+        project: service.projectName,
+        notes: note,
+      });
+
       await UserModel.findOneAndUpdate(
         {
           "services._id": serviceId,
@@ -1125,6 +1206,35 @@ class UserService {
         element.state = ServiceStatusObjectState.current;
       }
     });
+
+    if (isReupload) {
+      const usersevice = await UserModel.findOne({
+        "services._id": serviceId,
+      }).select("services name email");
+
+      const service = usersevice?.services?.find(
+        (el) => String(el._id) === serviceId
+      );
+
+      if (!service || !usersevice) {
+        throw new ApolloError("Something went wrong, try again later");
+      }
+
+      const internalAdmin = await AdminModel.findOne({
+        _id: service.assignedTo,
+      })
+        .lean()
+        .select("name email");
+
+      await addToCommunicationsQueue({
+        email: internalAdmin?.email ?? "",
+        service: service.subService ? service.subService : service.serviceName,
+        type: EmailTriggerTypeEnum.servicereupload,
+        customer: usersevice.name ?? "",
+        engineer: internalAdmin?.name ?? "",
+        project: service.projectName,
+      });
+    }
 
     await UserModel.updateOne(
       {

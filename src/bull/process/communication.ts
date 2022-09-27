@@ -3,7 +3,19 @@ import {
   EmailTriggerTypeEnum,
   IEmailCommunicationQueue,
 } from "../../interface/bull";
-import { servicePurchaseMail } from "../../mails";
+import {
+  internalRevisionSubmission,
+  serviceAssignmentInternal,
+  serviceCompletion,
+  serviceDelivery,
+  servicePurchaseMail,
+  serviceQACheck,
+  serviceQAReject,
+  serviceReuploaded,
+  serviceReuploadRequest,
+  serviceReviewAcceptance,
+  serviceRevisionRequest,
+} from "../../mails";
 
 export const sendCommunication = async (job: Job<IEmailCommunicationQueue>) => {
   const type = job.data.type;
@@ -17,22 +29,97 @@ export const sendCommunication = async (job: Job<IEmailCommunicationQueue>) => {
       );
       break;
     case EmailTriggerTypeEnum.serviceassign:
+      await serviceAssignmentInternal(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.service ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? ""
+      );
+      break;
+    case EmailTriggerTypeEnum.servicereuploadrequest:
+      await serviceReuploadRequest(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.notes ?? "",
+        job.data.service ?? ""
+      );
+      break;
+    case EmailTriggerTypeEnum.servicereupload:
+      await serviceReuploaded(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.service ?? ""
+      );
       break;
     case EmailTriggerTypeEnum.servicereview:
+      await serviceReviewAcceptance(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.service ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicesubmitted:
+      await serviceQACheck(
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicerejected:
+      await serviceQAReject(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.service ?? "",
+        job.data.notes ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.serviceresubmission:
+      await internalRevisionSubmission(
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicedelivery:
+      await serviceDelivery(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.project ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicerevisionrequest:
+      await serviceRevisionRequest(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.service ?? "",
+        job.data.notes ?? ""
+      );
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicerevisiondelivery:
       break;
-    case EmailTriggerTypeEnum.servicereview:
+    case EmailTriggerTypeEnum.servicecomplete:
+      await serviceCompletion(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.notes ?? ""
+      );
+      break;
+    case EmailTriggerTypeEnum.serviceaddonrequest:
+      break;
+    case EmailTriggerTypeEnum.serviceaddondelivery:
       break;
   }
 };

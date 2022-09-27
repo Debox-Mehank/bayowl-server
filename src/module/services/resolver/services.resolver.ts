@@ -68,17 +68,19 @@ export default class ServicesResolver {
   @UseMiddleware([isAuth, isAdmin])
   requestReupload(
     @Arg("serviceId") serviceId: string,
-    @Arg("reuploadNote") reuploadNote: string
+    @Arg("reuploadNote") reuploadNote: string,
+    @Ctx() context: Context
   ): Promise<Boolean> {
-    return this.service.requestReupload(serviceId, reuploadNote);
+    return this.service.requestReupload(serviceId, reuploadNote, context);
   }
 
   @Query(() => Boolean)
   @UseMiddleware([isAuth, isAdmin])
   confirmUpload(
     @Arg("serviceId") serviceId: string,
-    @Arg("deliveryDays") deliveryDays: number
+    @Arg("deliveryDays") deliveryDays: number,
+    @Ctx() context: Context
   ): Promise<Boolean> {
-    return this.service.confirmUpload(serviceId, deliveryDays);
+    return this.service.confirmUpload(serviceId, deliveryDays, context);
   }
 }
