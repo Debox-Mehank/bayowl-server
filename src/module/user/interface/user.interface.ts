@@ -1,8 +1,11 @@
 import { mongoose, prop, Ref } from "@typegoose/typegoose";
 import { Field, InputType, ObjectType, registerEnumType } from "type-graphql";
 import { Admin } from "../../admin/schema/admin.schema";
-import { ServicesInput } from "../../services/interface/services.input";
-import { Services } from "../../services/schema/services.schema";
+import {
+  AddOnInput,
+  ServicesInput,
+} from "../../services/interface/services.input";
+import { AddOn, Services } from "../../services/schema/services.schema";
 
 export enum UserServiceStatus {
   pendingupload = "Pending Upload",
@@ -218,7 +221,7 @@ export class UserServices extends Services {
     type: String,
     default: null,
   })
-  wrokingFile: string;
+  workingFile: string;
 
   @Field(() => Boolean)
   @prop({ default: false })
@@ -237,7 +240,22 @@ export class UserServices extends Services {
     type: String,
     default: null,
   })
-  addOnExportsFile: string;
+  multitrackFile: string;
+
+  @Field(() => String, { nullable: true })
+  @prop({
+    type: String,
+    default: null,
+  })
+  stemsFiles: string;
+
+  @Field(() => Number, { nullable: true })
+  @prop({ default: null })
+  completedFor: number;
+
+  @Field(() => [AddOn], { nullable: true })
+  @prop({ default: [] })
+  allAddOns: mongoose.Types.Array<AddOn>;
 
   @Field(() => Date, { nullable: true })
   @prop({ default: null })
@@ -248,6 +266,9 @@ export class UserServices extends Services {
 export class UserServicesInput extends ServicesInput {
   @Field(() => String, { nullable: true })
   projectName: string;
+
+  @Field(() => [AddOnInput], { nullable: false })
+  allAddOns: AddOnInput[];
 }
 
 @InputType()

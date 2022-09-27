@@ -34,17 +34,17 @@ export default class DashboardContentResolver {
 
   @Query(() => Boolean)
   @UseMiddleware([isAuth, isAdmin])
-  updateDashboardContent(
-    @Arg("id") id: string,
-    @Arg("input") input: DashboardContentInput
-  ) {
-    return this.service.updateDashboardContent(id, input);
+  toggleDashboardContent(@Arg("id") id: string): Promise<boolean> {
+    return this.service.toggleDashboardContent(id);
   }
 
-  @Query(() => DashboardContent)
+  @Query(() => Boolean)
   @UseMiddleware([isAuth, isAdmin])
-  toggleDashboardContent(@Arg("id") id: string) {
-    return this.service.toggleDashboardContent(id);
+  deleteDashboardContent(
+    @Arg("id") id: string,
+    @Arg("image") image: string
+  ): Promise<boolean> {
+    return this.service.deleteDashboardContent(id, image);
   }
 
   @Query(() => String)

@@ -1,7 +1,7 @@
 import { InputType, Field } from "type-graphql";
 
 @InputType()
-class AddOnInput {
+export class AddOnInput {
   @Field(() => String, { nullable: false })
   type: string;
 

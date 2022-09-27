@@ -15,7 +15,10 @@ import {
 import { User, UserModel } from "../schema/user.schema";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
-import { sendUserVerificationEmail } from "../../../mails";
+import {
+  sendResetPasswordLink,
+  sendUserVerificationEmail,
+} from "../../../mails";
 import { VerificationTokenType } from "../../../interface/jwt";
 import { PaymentModel } from "../../payment/schema/payment.schema";
 import {
@@ -299,14 +302,14 @@ class UserService {
           "string.empty": "You have not entered your email id.",
           "string.email": "You have entered an invalid email id.",
         }),
-        number: Joi.string()
-          .length(10)
-          .pattern(/^[0-9]+$/)
-          .messages({
-            "string.empty": "You have not entered your phone number.",
-            "string.length": "You have entered an invalid phone number.",
-            "string.pattern": "You have entered an invalid phone number.",
-          }),
+        // number: Joi.string()
+        //   .length(10)
+        //   .pattern(/^[0-9]+$/)
+        //   .messages({
+        //     "string.empty": "You have not entered your phone number.",
+        //     "string.length": "You have entered an invalid phone number.",
+        //     "string.pattern": "You have entered an invalid phone number.",
+        //   }),
         password: Joi.string()
           .required()
           .messages({ "string.empty": "You have not entered your password." }),
@@ -315,7 +318,6 @@ class UserService {
       // Schema Validation
       const { error } = joiSchema.validate({
         name: input.name,
-        number: input.number,
         email: input.email,
         password: input.password,
       });
@@ -508,6 +510,47 @@ class UserService {
     }
   }
 
+  async requestPasswordReset(email: string): Promise<Boolean> {
+    const user = await getUserByEmail(email);
+
+    try {
+      if (user) {
+        await sendResetPasswordLink(email, user._id);
+      }
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      throw new ApolloError(error as string);
+    }
+  }
+
+  async resetPassword(token: string, password: string) {
+    const payload = verifyJwt<VerificationTokenType>(token);
+
+    if (!payload) {
+      throw new ApolloError("Verification link expired!");
+    }
+
+    const user = await UserModel.findById(payload.id).select("email");
+
+    if (!user) {
+      throw new ApolloError("Something went wrong!");
+    }
+
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const hash = bcrypt.hashSync(password, salt);
+      await UserModel.findByIdAndUpdate(payload.id, {
+        $set: { password: hash, passwordResetDate: new Date().toUTCString() },
+        $inc: { passwordResetCounter: 1 },
+      });
+      return true;
+    } catch (error) {
+      throw new ApolloError("Something went wrong!");
+    }
+  }
+
   async updatePorjectName(
     projectName: string,
     serviceId: string,
@@ -631,31 +674,7 @@ class UserService {
     return update.acknowledged;
   }
 
-  async addWorkingFile(serviceId: string, url: string) {
-    const update = await UserModel.updateOne(
-      { "services._id": serviceId },
-      {
-        $set: {
-          "services.$.wrokingFile": url,
-        },
-      }
-    );
-    return update.acknowledged;
-  }
-
-  async addAddOnExportsFile(serviceId: string, url: string) {
-    const update = await UserModel.updateOne(
-      { "services._id": serviceId },
-      {
-        $set: {
-          "services.$.addOnExportsFile": url,
-        },
-      }
-    );
-    return update.acknowledged;
-  }
-
-  async markCompleted(serviceId: string) {
+  async markCompleted(serviceId: string, completedFor: number) {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
     }).select("services");
@@ -682,6 +701,7 @@ class UserService {
           "services.$.statusType": UserServiceStatus.completed,
           "services.$.completionDate": new Date().toUTCString(),
           "services.$.status": newStatus,
+          "services.$.completedFor": completedFor,
         },
       }
     );
@@ -825,12 +845,94 @@ class UserService {
     return true;
   }
 
+  async uploadWorkingFiles(serviceId: string, fileUrl: string, ctx: Context) {
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    });
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service) {
+      throw new ApolloError("Service not found");
+    }
+
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $set: {
+          "services.$.workingFile": fileUrl,
+        },
+      }
+    );
+    return true;
+  }
+
+  async uploadBusFiles(serviceId: string, fileUrl: string, ctx: Context) {
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    });
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service) {
+      throw new ApolloError("Service not found");
+    }
+
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $set: {
+          "services.$.stemsFiles": fileUrl,
+        },
+      }
+    );
+    return true;
+  }
+
+  async uploadMultitrackFiles(
+    serviceId: string,
+    fileUrl: string,
+    ctx: Context
+  ) {
+    const usersevice = await UserModel.findOne({
+      "services._id": serviceId,
+    });
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === serviceId
+    );
+
+    if (!service) {
+      throw new ApolloError("Service not found");
+    }
+
+    await UserModel.findOneAndUpdate(
+      {
+        "services._id": serviceId,
+      },
+      {
+        $set: {
+          "services.$.multitrackFile": fileUrl,
+        },
+      }
+    );
+    return true;
+  }
+
   async addRevisionNotesByMaster(
     note: string,
     serviceId: string,
     ctx: Context
   ) {
-    if (ctx.role !== AdminRole.master)
+    if (ctx.role === AdminRole.employee)
       throw new ApolloError("You are unauthorized");
 
     const s3 = new aws.S3({

@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-class AddOn {
+export class AddOn {
   @Field(() => String, { nullable: false })
   @prop({ required: true, trim: true })
   type: string;

@@ -16,7 +16,11 @@ class DashboardContentService {
   async getAll(): Promise<DashboardContent[]> {
     try {
       const all = await DashboardContentModel.find({});
-      return all;
+      const final = all.map((el) => ({
+        ...el.toObject(),
+        image: `${process.env.AWS_CLOUDFRONT}/${el.image}`,
+      }));
+      return final;
     } catch (error: any) {
       throw new ApolloError(error.toString());
     }
@@ -24,8 +28,11 @@ class DashboardContentService {
 
   async getActive(): Promise<DashboardContent[]> {
     try {
-      const active = await DashboardContentModel.find({});
-      return active;
+      const active = await DashboardContentModel.find({ active: true }).lean();
+      return active.map((el) => ({
+        ...el,
+        image: `${process.env.AWS_CLOUDFRONT}/${el.image}`,
+      }));
     } catch (error: any) {
       throw new ApolloError(error.toString());
     }
@@ -38,6 +45,7 @@ class DashboardContentService {
     try {
       const addedContent = await DashboardContentModel.create({
         ...input,
+        image: `${input.image}`,
         lastUpdatedBy: ctx.user,
         createdBy: ctx.user,
       });
@@ -66,8 +74,44 @@ class DashboardContentService {
     try {
       const updatedContent = await DashboardContentModel.updateOne(
         { _id: id },
-        { $set: { active: { $not: "$active" } } }
+        [{ $set: { active: { $not: "$active" } } }]
       );
+      return updatedContent.acknowledged;
+    } catch (error: any) {
+      throw new ApolloError(error.toString());
+    }
+  }
+
+  async deleteDashboardContent(id: string, image: string): Promise<boolean> {
+    try {
+      const s3 = new aws.S3({
+        region,
+        accessKeyId,
+        secretAccessKey: accessKeySecret,
+        signatureVersion: "v4",
+      });
+
+      const { Deleted, Errors } = await s3
+        .deleteObjects({
+          Bucket: bucketName,
+          Delete: {
+            Objects: [{ Key: image.split("/")[1] }],
+            Quiet: false,
+          },
+        })
+        .promise();
+
+      if (Errors && Errors.length > 0)
+        throw new ApolloError(Errors.map((el) => el.Message ?? "").join(","));
+
+      if (!Deleted) {
+        return false;
+      }
+
+      const updatedContent = await DashboardContentModel.deleteOne({
+        _id: id,
+      });
+
       return updatedContent.acknowledged;
     } catch (error: any) {
       throw new ApolloError(error.toString());

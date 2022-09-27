@@ -58,6 +58,6 @@ export const getUserByEmail = async (email: string) => {
 export const getUserEmail = async (_id: string) => {
   const user = await UserModel.findOne({ _id: _id })
     .lean()
-    .select("_id email name");
+    .select("_id email name free");
   return user;
 };

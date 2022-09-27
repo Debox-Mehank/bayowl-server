@@ -25,6 +25,16 @@ export default class PaymentResolver {
     return this.service.initiatePayment(ctx, service);
   }
 
+  @Query(() => String)
+  @UseMiddleware([isAuth])
+  initiateAddOnPayment(
+    @Ctx() ctx: Context,
+    @Arg("amount") amount: number,
+    @Arg("serviceId") serviceId: string
+  ) {
+    return this.service.initiateAddOnPayment(amount, serviceId, ctx);
+  }
+
   // Remove Service
   @Query(() => Boolean)
   @UseMiddleware([isAuth])

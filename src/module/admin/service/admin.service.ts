@@ -107,6 +107,45 @@ class AdminService {
     ];
   }
 
+  async dashboardMetEmployee(ctx: Context) {
+    const services: UserServices[] = await UserModel.aggregate([
+      { $unwind: "$services" },
+      {
+        $replaceRoot: {
+          newRoot: "$services",
+        },
+      },
+    ]);
+    return [
+      {
+        label: DashboardEnum.NumberOfServicesPendingAcceptance,
+        data: services.filter(
+          (el) =>
+            [
+              UserServiceStatus.underreviewinternal,
+              UserServiceStatus.underreview,
+            ].includes(el.statusType) && el.assignedTo?.toString() === ctx.user
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesInProgress,
+        data: services.filter(
+          (el) =>
+            [UserServiceStatus.workinprogress].includes(el.statusType) &&
+            el.assignedTo?.toString() === ctx.user
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesCompleted,
+        data: services.filter(
+          (el) =>
+            [UserServiceStatus.completed].includes(el.statusType) &&
+            el.assignedTo?.toString() === ctx.user
+        ).length,
+      },
+    ];
+  }
+
   logoutAdmin(context: Context) {
     if (process.env.NODE_ENV === "production") {
       context.res!.cookie("accessToken", "", {

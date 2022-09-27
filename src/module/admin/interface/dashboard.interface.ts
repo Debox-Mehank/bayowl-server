@@ -16,9 +16,9 @@ registerEnumType(DashboardEnum, {
 
 @ObjectType()
 export class DashboardInterfaceClass {
-  @Field(() => String, { nullable: false })
+  @Field(() => DashboardEnum, { nullable: false })
   @prop({ required: true })
-  label: string;
+  label: DashboardEnum;
 
   @Field(() => Number, { nullable: false })
   @prop({ required: true })

@@ -84,6 +84,19 @@ export default class UserResolver {
   }
 
   @Query(() => Boolean)
+  requestPasswordReset(@Arg("email") email: string): Promise<Boolean> {
+    return this.service.requestPasswordReset(email);
+  }
+
+  @Query(() => Boolean)
+  resetPassword(
+    @Arg("password") password: string,
+    @Arg("token") token: string
+  ): Promise<Boolean> {
+    return this.service.resetPassword(token, password);
+  }
+
+  @Query(() => Boolean)
   approveProject(@Arg("serviceId") serviceId: String) {
     return this.service.approveProject(serviceId);
   }
@@ -133,24 +146,6 @@ export default class UserResolver {
     @Arg("url") url: string
   ): Promise<Boolean> {
     return this.service.addDeliverFiles(serviceId, url);
-  }
-
-  @Query(() => Boolean)
-  @UseMiddleware([isAuth, isAdmin])
-  addWorkingFile(
-    @Arg("serviceId") serviceId: string,
-    @Arg("url") url: string
-  ): Promise<Boolean> {
-    return this.service.addWorkingFile(serviceId, url);
-  }
-
-  @Query(() => Boolean)
-  @UseMiddleware([isAuth, isAdmin])
-  addAddOnExportsFile(
-    @Arg("serviceId") serviceId: string,
-    @Arg("url") url: string
-  ): Promise<Boolean> {
-    return this.service.addAddOnExportsFile(serviceId, url);
   }
 
   // User logout
@@ -222,8 +217,11 @@ export default class UserResolver {
 
   @Query(() => Boolean)
   @UseMiddleware([isAuth])
-  markCompleted(@Arg("serviceId") serviceId: string): Promise<boolean> {
-    return this.service.markCompleted(serviceId);
+  markCompleted(
+    @Arg("serviceId") serviceId: string,
+    @Arg("completedFor") completedFor: number
+  ): Promise<boolean> {
+    return this.service.markCompleted(serviceId, completedFor);
   }
 
   @Query(() => Boolean)
@@ -245,5 +243,34 @@ export default class UserResolver {
       notes,
       isReupload
     );
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  uploadWorkingFiles(
+    @Ctx() context: Context,
+    @Arg("serviceId") serviceId: string,
+    @Arg("fileUrl", () => String) fileUrl: string
+  ): Promise<boolean> {
+    return this.service.uploadWorkingFiles(serviceId, fileUrl, context);
+  }
+
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  uploadBusFiles(
+    @Ctx() context: Context,
+    @Arg("serviceId") serviceId: string,
+    @Arg("fileUrl", () => String) fileUrl: string
+  ): Promise<boolean> {
+    return this.service.uploadBusFiles(serviceId, fileUrl, context);
+  }
+  @Query(() => Boolean)
+  @UseMiddleware([isAuth, isAdmin])
+  uploadMultitrackFiles(
+    @Ctx() context: Context,
+    @Arg("serviceId") serviceId: string,
+    @Arg("fileUrl", () => String) fileUrl: string
+  ): Promise<boolean> {
+    return this.service.uploadMultitrackFiles(serviceId, fileUrl, context);
   }
 }

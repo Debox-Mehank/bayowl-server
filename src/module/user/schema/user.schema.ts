@@ -78,6 +78,14 @@ export class User {
   @prop({ default: false })
   accountVerified: boolean;
 
+  @Field(() => Date, { nullable: true })
+  @prop({ default: null })
+  passwordResetDate: Date;
+
+  @Field(() => Number, { nullable: true })
+  @prop({ default: 0 })
+  passwordResetCounter: Number;
+
   @Field(() => Date)
   @prop()
   createdAt: Date;

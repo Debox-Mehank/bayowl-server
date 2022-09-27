@@ -26,7 +26,7 @@ export default class AdminResolver {
 
   @Query(() => Boolean)
   @UseMiddleware(isAuth, isAdmin)
-  resetPassword(
+  resetPasswordAdmin(
     @Arg("id") id: string,
     @Arg("password") password: string
   ): Promise<boolean> {
@@ -70,8 +70,15 @@ export default class AdminResolver {
   }
 
   @Query(() => [DashboardInterfaceClass])
+  @UseMiddleware([isAuth, isAdmin])
   dashboardMet() {
     return this.service.dashboardMet();
+  }
+
+  @Query(() => [DashboardInterfaceClass])
+  @UseMiddleware([isAuth, isAdmin])
+  dashboardMetEmployee(@Ctx() context: Context) {
+    return this.service.dashboardMetEmployee(context);
   }
 
   // Admin allEmployees
