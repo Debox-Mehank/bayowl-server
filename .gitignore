@@ -3,5 +3,5 @@
 /.pnp
 .pnp.js
 /dist
-.env.local
+.env
 deploy.zip

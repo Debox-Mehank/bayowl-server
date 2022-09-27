@@ -42,10 +42,7 @@ const apolloServerConfig = async (httpServer: Server, app: Application) => {
     },
     plugins: [
       process.env.NODE_ENV === "production"
-        ? ApolloServerPluginLandingPageProductionDefault({
-            embed: true,
-            graphRef: "plaid-gufzoj@current",
-          })
+        ? ApolloServerPluginLandingPageLocalDefault({ embed: true })
         : ApolloServerPluginLandingPageLocalDefault({ embed: true }),
 
       // Proper shutdown for the HTTP server.
