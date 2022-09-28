@@ -35,9 +35,11 @@ app.use(
       "http://localhost:3001",
       "http://localhost:3002",
       "https://www.bayowl.studio",
+      "https://main.d3nsdx0ho3r810.amplifyapp.com/",
       "https://bayowl.studio",
       "https://admin.bayowl.studio",
     ],
+    credentials: true,
   })
 );
 
