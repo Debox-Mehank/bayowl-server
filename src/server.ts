@@ -62,5 +62,6 @@ EmailCommunicationQueue.on("failed", (job, err) =>
 
 httpServer.listen({ port }, () => {
   // useServer({ schema }, wsServer);
+  console.log(`ENV : ${process.env.NODE_ENV}`);
   console.info(`Graphql server started on port : ${port}`);
 });
