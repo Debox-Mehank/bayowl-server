@@ -13,6 +13,7 @@ export enum EmailTriggerTypeEnum {
   servicecomplete = "servicecomplete",
   serviceaddonrequest = "serviceaddonrequest",
   serviceaddondelivery = "serviceaddondelivery",
+  contactenquiry = "contactenquiry",
 }
 
 export interface IEmailCommunicationQueue {

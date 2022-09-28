@@ -5,6 +5,7 @@ import {
 } from "../../interface/bull";
 import {
   internalRevisionSubmission,
+  sendEnquiryMail,
   serviceAssignmentInternal,
   serviceCompletion,
   serviceDelivery,
@@ -120,6 +121,14 @@ export const sendCommunication = async (job: Job<IEmailCommunicationQueue>) => {
     case EmailTriggerTypeEnum.serviceaddonrequest:
       break;
     case EmailTriggerTypeEnum.serviceaddondelivery:
+      break;
+    case EmailTriggerTypeEnum.contactenquiry:
+      await sendEnquiryMail(
+        job.data.email,
+        job.data.project ?? "",
+        job.data.notes ?? "",
+        job.data.customer ?? ""
+      );
       break;
   }
 };

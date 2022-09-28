@@ -464,3 +464,28 @@ export const serviceCompletion = async (
     console.log("Error in sending mail: " + error);
   }
 };
+
+export const sendEnquiryMail = async (
+  email: string,
+  phone: string,
+  message: string,
+  fullname: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "contact-enquiry",
+    subject: "New Contact Form Enquiry",
+    context: {
+      email: email,
+      phone: phone,
+      message: message,
+      fullname: fullname,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};

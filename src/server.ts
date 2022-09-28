@@ -15,6 +15,8 @@ import {
   paymentLinkCallbackHandler,
 } from "./module/payment/controller/callback";
 import { EmailCommunicationQueue } from "./bull";
+import { contactFormHandler } from "./module/contact";
+import cors from "cors";
 
 // import { worker } from "./modules/bull/worker/index";
 const port = process.env.PORT || 4000;
@@ -26,6 +28,18 @@ const httpServer = http.createServer(app);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "https://www.bayowl.studio",
+      "https://bayowl.studio",
+      "https://admin.bayowl.studio",
+    ],
+  })
+);
 
 // Apollo Server
 apolloServerConfig(httpServer, app);
@@ -51,6 +65,7 @@ app.post(
   "/api/payments/pg/callbackRevision",
   paymentCallbackHandlerAddonRevision
 );
+app.post("/api/contactForm", contactFormHandler);
 
 // Queue Callbacks
 EmailCommunicationQueue.on("completed", (job) =>

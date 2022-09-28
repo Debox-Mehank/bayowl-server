@@ -59,6 +59,7 @@ const apolloServerConfig = async (httpServer: Server, app: Application) => {
       origin: [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:3002",
         "https://www.bayowl.studio",
         "https://bayowl.studio",
         "https://admin.bayowl.studio",

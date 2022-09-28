@@ -4,4 +4,4 @@
 .pnp.js
 /dist
 .env
-deploy.zip
+deploy*.zip

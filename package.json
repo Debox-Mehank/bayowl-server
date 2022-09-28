@@ -18,6 +18,7 @@
     "bull": "^4.9.0",
     "bullmq": "^2.1.0",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "google-auth-library": "^8.5.1",
     "googleapis": "^108.0.0",
