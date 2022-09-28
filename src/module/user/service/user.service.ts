@@ -636,20 +636,6 @@ class UserService {
   }
 
   async approveProject(serviceId: String): Promise<boolean> {
-    let newStatus = [...defaultStatus];
-
-    newStatus.forEach((element) => {
-      if (element.name === UserServiceStatus.underreview) {
-        element.state = ServiceStatusObjectState.completed;
-      }
-      if (element.name === UserServiceStatus.workinprogress) {
-        element.state = ServiceStatusObjectState.completed;
-      }
-      if (element.name === UserServiceStatus.delivered) {
-        element.state = ServiceStatusObjectState.completed;
-      }
-    });
-
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
     }).select("services name email");
@@ -662,14 +648,8 @@ class UserService {
       throw new ApolloError("Something went wrong, try again later");
     }
 
-    const internalAdmin = await AdminModel.findOne({
-      _id: service.assignedTo,
-    })
-      .lean()
-      .select("name email");
-
     await addToCommunicationsQueue({
-      email: internalAdmin?.email ?? "",
+      email: usersevice.email ?? "",
       type: EmailTriggerTypeEnum.servicedelivery,
       customer: usersevice.name ?? "",
       project: service.projectName,
@@ -680,7 +660,36 @@ class UserService {
       {
         $set: {
           "services.$.statusType": UserServiceStatus.delivered,
-          "services.$.status": newStatus,
+          "services.$.status": [
+            {
+              name: UserServiceStatus.pendingupload,
+              state: ServiceStatusObjectState.completed,
+            },
+            {
+              name: UserServiceStatus.underreview,
+              state: ServiceStatusObjectState.completed,
+            },
+            {
+              name: UserServiceStatus.workinprogress,
+              state: ServiceStatusObjectState.completed,
+            },
+            {
+              name: UserServiceStatus.delivered,
+              state: ServiceStatusObjectState.completed,
+            },
+            {
+              name: UserServiceStatus.revisionrequest,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.revisiondelivered,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.completed,
+              state: ServiceStatusObjectState.pending,
+            },
+          ],
           "services.$.masterProjectApprovalTime": new Date().toUTCString(),
         },
       }
@@ -1196,17 +1205,6 @@ class UserService {
       throw new ApolloError("Something went wrong, try again later.");
     }
 
-    let newStatus = [...defaultStatus];
-
-    newStatus.forEach((element) => {
-      if (element.name === UserServiceStatus.pendingupload) {
-        element.state = ServiceStatusObjectState.completed;
-      }
-      if (element.name === UserServiceStatus.underreview) {
-        element.state = ServiceStatusObjectState.current;
-      }
-    });
-
     if (isReupload) {
       const usersevice = await UserModel.findOne({
         "services._id": serviceId,
@@ -1250,7 +1248,36 @@ class UserService {
           "services.$.uploadedFiles": uplodedFiles,
           "services.$.referenceFiles": referenceUploadedFiles ?? [],
           "services.$.statusType": UserServiceStatus.underreview,
-          "services.$.status": newStatus,
+          "services.$.status": [
+            {
+              name: UserServiceStatus.pendingupload,
+              state: ServiceStatusObjectState.completed,
+            },
+            {
+              name: UserServiceStatus.underreview,
+              state: ServiceStatusObjectState.current,
+            },
+            {
+              name: UserServiceStatus.workinprogress,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.delivered,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.revisionrequest,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.revisiondelivered,
+              state: ServiceStatusObjectState.pending,
+            },
+            {
+              name: UserServiceStatus.completed,
+              state: ServiceStatusObjectState.pending,
+            },
+          ],
           "services.$.notes": notes ?? null,
           "services.$.submissionDate": new Date().toUTCString(),
           "services.$.reupload": isReupload ? new Date().toUTCString() : null,

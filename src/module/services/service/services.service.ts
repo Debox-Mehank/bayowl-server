@@ -103,10 +103,12 @@ class ServicesService {
           respArr.push(elem)
       )
     );
+    respArr.sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
     return respArr;
   }
 
   async getAllServiceForMaster() {
+    // console.log("first");
     const newU = await UserModel.find({
       services: { $exists: true, $not: { $size: 0 } },
     })
@@ -120,6 +122,7 @@ class ServicesService {
         respArr.push(elem)
       )
     );
+    respArr.sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
     return respArr;
     // const users = await UserModel.aggregate([
     //   { $unwind: "$services" },
@@ -190,18 +193,6 @@ class ServicesService {
         return false;
       }
 
-      // Update users collection
-      let newStatus = [...defaultStatus];
-
-      newStatus.forEach((element) => {
-        if (element.name === UserServiceStatus.pendingupload) {
-          element.state = ServiceStatusObjectState.current;
-        }
-        if (element.name === UserServiceStatus.underreview) {
-          element.state = ServiceStatusObjectState.pending;
-        }
-      });
-
       const internalAdmin = await AdminModel.findOne({ _id: ctx.user })
         .lean()
         .select("name email");
@@ -231,7 +222,36 @@ class ServicesService {
             "services.$.uploadedFiles": [],
             // "services.$.referenceFiles": [],
             "services.$.statusType": UserServiceStatus.pendingupload,
-            "services.$.status": newStatus,
+            "services.$.status": [
+              {
+                name: UserServiceStatus.pendingupload,
+                state: ServiceStatusObjectState.current,
+              },
+              {
+                name: UserServiceStatus.underreview,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.workinprogress,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.delivered,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.revisionrequest,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.revisiondelivered,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.completed,
+                state: ServiceStatusObjectState.pending,
+              },
+            ],
             "services.$.reuploadNote": reuploadNote,
             "services.$.reupload": new Date().toUTCString(),
           },
@@ -263,21 +283,6 @@ class ServicesService {
     ctx: Context
   ): Promise<boolean> {
     try {
-      // Update users collection
-      let newStatus = [...defaultStatus];
-
-      newStatus.forEach((element) => {
-        if (element.name === UserServiceStatus.pendingupload) {
-          element.state = ServiceStatusObjectState.completed;
-        }
-        if (element.name === UserServiceStatus.underreview) {
-          element.state = ServiceStatusObjectState.completed;
-        }
-        if (element.name === UserServiceStatus.workinprogress) {
-          element.state = ServiceStatusObjectState.current;
-        }
-      });
-
       const estDeliveryTime = moment()
         .add(deliveryDays, "days")
         .toDate()
@@ -319,7 +324,36 @@ class ServicesService {
         {
           $set: {
             "services.$.statusType": UserServiceStatus.workinprogress,
-            "services.$.status": newStatus,
+            "services.$.status": [
+              {
+                name: UserServiceStatus.pendingupload,
+                state: ServiceStatusObjectState.completed,
+              },
+              {
+                name: UserServiceStatus.underreview,
+                state: ServiceStatusObjectState.completed,
+              },
+              {
+                name: UserServiceStatus.workinprogress,
+                state: ServiceStatusObjectState.current,
+              },
+              {
+                name: UserServiceStatus.delivered,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.revisionrequest,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.revisiondelivered,
+                state: ServiceStatusObjectState.pending,
+              },
+              {
+                name: UserServiceStatus.completed,
+                state: ServiceStatusObjectState.pending,
+              },
+            ],
             "services.$.estDeliveryDate": estDeliveryTime,
           },
         }
