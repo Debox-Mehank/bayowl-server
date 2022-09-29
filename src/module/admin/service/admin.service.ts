@@ -84,24 +84,40 @@ class AdminService {
         }),
       },
       {
+        label: DashboardEnum.NumberOfPaidService,
+        data: services.length,
+      },
+      {
         label: DashboardEnum.NumberOfServicesPendingAcceptance,
         data: services.filter((el) =>
-          [
-            UserServiceStatus.underreviewinternal,
-            UserServiceStatus.underreview,
-          ].includes(el.statusType)
+          [UserServiceStatus.underreviewinternal].includes(el.statusType)
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesPendingAcceptanceCustomer,
+        data: services.filter((el) =>
+          [UserServiceStatus.delivered].includes(el.statusType)
         ).length,
       },
       {
         label: DashboardEnum.NumberOfServicesInProgress,
         data: services.filter((el) =>
-          [UserServiceStatus.workinprogress].includes(el.statusType)
+          [
+            UserServiceStatus.workinprogress,
+            UserServiceStatus.underreview,
+          ].includes(el.statusType)
         ).length,
       },
       {
         label: DashboardEnum.NumberOfServicesCompleted,
         data: services.filter((el) =>
           [UserServiceStatus.completed].includes(el.statusType)
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesForRevision,
+        data: services.filter((el) =>
+          [UserServiceStatus.revisionrequest].includes(el.statusType)
         ).length,
       },
     ];
@@ -118,21 +134,34 @@ class AdminService {
     ]);
     return [
       {
+        label: DashboardEnum.NumberOfServicesAssigned,
+        data: services.filter((el) => el.assignedTo?.toString() === ctx.user)
+          .length,
+      },
+      {
         label: DashboardEnum.NumberOfServicesPendingAcceptance,
         data: services.filter(
           (el) =>
-            [
-              UserServiceStatus.underreviewinternal,
-              UserServiceStatus.underreview,
-            ].includes(el.statusType) && el.assignedTo?.toString() === ctx.user
+            [UserServiceStatus.underreviewinternal].includes(el.statusType) &&
+            el.assignedTo?.toString() === ctx.user
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesPendingAcceptanceCustomer,
+        data: services.filter(
+          (el) =>
+            [UserServiceStatus.delivered].includes(el.statusType) &&
+            el.assignedTo?.toString() === ctx.user
         ).length,
       },
       {
         label: DashboardEnum.NumberOfServicesInProgress,
         data: services.filter(
           (el) =>
-            [UserServiceStatus.workinprogress].includes(el.statusType) &&
-            el.assignedTo?.toString() === ctx.user
+            [
+              UserServiceStatus.workinprogress,
+              UserServiceStatus.underreview,
+            ].includes(el.statusType) && el.assignedTo?.toString() === ctx.user
         ).length,
       },
       {
@@ -140,6 +169,14 @@ class AdminService {
         data: services.filter(
           (el) =>
             [UserServiceStatus.completed].includes(el.statusType) &&
+            el.assignedTo?.toString() === ctx.user
+        ).length,
+      },
+      {
+        label: DashboardEnum.NumberOfServicesForRevision,
+        data: services.filter(
+          (el) =>
+            [UserServiceStatus.revisionrequest].includes(el.statusType) &&
             el.assignedTo?.toString() === ctx.user
         ).length,
       },

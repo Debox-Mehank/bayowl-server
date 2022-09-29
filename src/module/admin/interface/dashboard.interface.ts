@@ -4,9 +4,13 @@ import { Field, ObjectType, registerEnumType } from "type-graphql";
 export enum DashboardEnum {
   NumberOfCustomersRegistered = "NumberOfCustomersRegistered",
   NumberOfCustomersWithPaidService = "NumberOfCustomersWithPaidService",
+  NumberOfPaidService = "NumberOfPaidService",
   NumberOfServicesPendingAcceptance = "NumberOfServicesPendingAcceptance",
+  NumberOfServicesPendingAcceptanceCustomer = "NumberOfServicesPendingAcceptanceCustomer",
   NumberOfServicesInProgress = "NumberOfServicesInProgress",
   NumberOfServicesCompleted = "NumberOfServicesCompleted",
+  NumberOfServicesAssigned = "NumberOfServicesAssigned",
+  NumberOfServicesForRevision = "NumberOfServicesForRevision",
 }
 
 registerEnumType(DashboardEnum, {
