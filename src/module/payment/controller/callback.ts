@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { addToCommunicationsQueue } from "../../../bull";
 import { EmailTriggerTypeEnum } from "../../../interface/bull";
 import { sendUserCreateAccountMail } from "../../../mails";
+import { AdminModel } from "../../admin/schema/admin.schema";
 import { UserModel } from "../../user/schema/user.schema";
 import { PaymentModel } from "../schema/payment.schema";
 
@@ -177,6 +178,45 @@ export const paymentCallbackHandlerAddonMultitrack = async (
       { new: true }
     );
 
+    const usersevice = await UserModel.findOne({
+      "services._id": pm?.userServiceId,
+    }).select("name");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === pm?.userServiceId
+    );
+
+    if (!service || !usersevice) {
+      res.status(400).json({
+        success: false,
+      });
+      return;
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      service: service.subService ? service.subService : service.serviceName,
+      type: EmailTriggerTypeEnum.serviceaddonrequest,
+      customer: usersevice?.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes: "Additional Exports: Multitracks",
+    });
+
+    await addToCommunicationsQueue({
+      type: EmailTriggerTypeEnum.serviceaddonpurchase,
+      email: pm?.email ?? "",
+      amount: pm?.amount,
+      customer: usersevice.name,
+      service: "Additional Exports: Multitracks",
+    });
+
     await UserModel.updateOne(
       {
         email: pm?.email,
@@ -228,6 +268,45 @@ export const paymentCallbackHandlerAddonStems = async (
       { new: true }
     );
 
+    const usersevice = await UserModel.findOne({
+      "services._id": pm?.userServiceId,
+    }).select("name");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === pm?.userServiceId
+    );
+
+    if (!service || !usersevice) {
+      res.status(400).json({
+        success: false,
+      });
+      return;
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      service: service.subService ? service.subService : service.serviceName,
+      type: EmailTriggerTypeEnum.serviceaddonrequest,
+      customer: usersevice?.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes: "Additional Exports: Bus Stems",
+    });
+
+    await addToCommunicationsQueue({
+      type: EmailTriggerTypeEnum.serviceaddonpurchase,
+      email: pm?.email ?? "",
+      amount: pm?.amount,
+      customer: usersevice.name,
+      service: "Additional Exports: Bus Stems",
+    });
+
     await UserModel.updateOne(
       {
         email: pm?.email,
@@ -278,6 +357,45 @@ export const paymentCallbackHandlerAddonBoth = async (
       },
       { new: true }
     );
+
+    const usersevice = await UserModel.findOne({
+      "services._id": pm?.userServiceId,
+    }).select("name");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === pm?.userServiceId
+    );
+
+    if (!service || !usersevice) {
+      res.status(400).json({
+        success: false,
+      });
+      return;
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      service: service.subService ? service.subService : service.serviceName,
+      type: EmailTriggerTypeEnum.serviceaddonrequest,
+      customer: usersevice?.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes: "Additional Exports: Multitracks, Additional Exports: Bus Stems",
+    });
+
+    await addToCommunicationsQueue({
+      type: EmailTriggerTypeEnum.serviceaddonpurchase,
+      email: pm?.email ?? "",
+      amount: pm?.amount,
+      customer: usersevice.name,
+      service: "Additional Exports: Multitracks, Additional Exports: Bus Stems",
+    });
 
     await UserModel.updateOne(
       {
@@ -334,6 +452,45 @@ export const paymentCallbackHandlerAddonRevision = async (
       },
       { new: true }
     );
+
+    const usersevice = await UserModel.findOne({
+      "services._id": pm?.userServiceId,
+    }).select("name");
+
+    const service = usersevice?.services?.find(
+      (el) => String(el._id) === pm?.userServiceId
+    );
+
+    if (!service || !usersevice) {
+      res.status(400).json({
+        success: false,
+      });
+      return;
+    }
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      service: service.subService ? service.subService : service.serviceName,
+      type: EmailTriggerTypeEnum.serviceaddonrequest,
+      customer: usersevice?.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes: "Extra Revision",
+    });
+
+    await addToCommunicationsQueue({
+      type: EmailTriggerTypeEnum.serviceaddonpurchase,
+      email: pm?.email ?? "",
+      amount: pm?.amount,
+      customer: usersevice.name,
+      service: "Extra Revision",
+    });
 
     await UserModel.updateOne(
       {

@@ -4,6 +4,9 @@ import {
   IEmailCommunicationQueue,
 } from "../../interface/bull";
 import {
+  addonDelivery,
+  addOnPurchase,
+  addonRequest,
   internalRevisionSubmission,
   sendEnquiryMail,
   serviceAssignmentInternal,
@@ -15,6 +18,7 @@ import {
   serviceReuploaded,
   serviceReuploadRequest,
   serviceReviewAcceptance,
+  serviceRevisionDelivery,
   serviceRevisionRequest,
 } from "../../mails";
 
@@ -108,6 +112,11 @@ export const sendCommunication = async (job: Job<IEmailCommunicationQueue>) => {
       );
       break;
     case EmailTriggerTypeEnum.servicerevisiondelivery:
+      await serviceRevisionDelivery(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.project ?? ""
+      );
       break;
     case EmailTriggerTypeEnum.servicecomplete:
       await serviceCompletion(
@@ -118,9 +127,30 @@ export const sendCommunication = async (job: Job<IEmailCommunicationQueue>) => {
         job.data.notes ?? ""
       );
       break;
+    case EmailTriggerTypeEnum.serviceaddonpurchase:
+      await addOnPurchase(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.service ?? "",
+        job.data.amount ?? 0
+      );
+      break;
     case EmailTriggerTypeEnum.serviceaddonrequest:
+      await addonRequest(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.engineer ?? "",
+        job.data.project ?? "",
+        job.data.service ?? "",
+        job.data.notes ?? ""
+      );
       break;
     case EmailTriggerTypeEnum.serviceaddondelivery:
+      await addonDelivery(
+        job.data.email,
+        job.data.customer ?? "",
+        job.data.project ?? ""
+      );
       break;
     case EmailTriggerTypeEnum.contactenquiry:
       await sendEnquiryMail(

@@ -11,6 +11,7 @@ export enum EmailTriggerTypeEnum {
   servicerevisionrequest = "servicerevisionrequest",
   servicerevisiondelivery = "servicerevisiondelivery",
   servicecomplete = "servicecomplete",
+  serviceaddonpurchase = "serviceaddonpurchase",
   serviceaddonrequest = "serviceaddonrequest",
   serviceaddondelivery = "serviceaddondelivery",
   contactenquiry = "contactenquiry",

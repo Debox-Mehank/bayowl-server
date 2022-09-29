@@ -744,16 +744,32 @@ class UserService {
       (el) => String(el._id) === serviceId
     );
 
-    if (!service) {
+    if (!service || !usersevice) {
       throw new ApolloError("Something went wrong, try again later");
     }
 
     let newStatus = [...service.status];
 
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
     newStatus.forEach((element) => {
       if (element.name === UserServiceStatus.completed) {
         element.state = ServiceStatusObjectState.completed;
       }
+    });
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      type: EmailTriggerTypeEnum.servicecomplete,
+      customer: usersevice.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes:
+        completedFor === 0 ? `Original Delivery` : `Revision - ${completedFor}`,
     });
 
     const update = await UserModel.updateOne(
@@ -827,6 +843,23 @@ class UserService {
     //   "services._id": serviceId
     // }).select("services.")
     // Need to add check for number of revision is surpassed or not
+
+    const internalAdmin = await AdminModel.findOne({
+      _id: service.assignedTo,
+    })
+      .lean()
+      .select("name email");
+
+    await addToCommunicationsQueue({
+      email: internalAdmin?.email ?? "",
+      service: service.subService ? service.subService : service.serviceName,
+      type: EmailTriggerTypeEnum.servicerevisionrequest,
+      customer: usersevice?.name ?? "",
+      engineer: internalAdmin?.name ?? "",
+      project: service.projectName,
+      notes: desc,
+    });
+
     await UserModel.findOneAndUpdate(
       {
         "services._id": serviceId,
@@ -892,6 +925,14 @@ class UserService {
     if (!revision) {
       throw new ApolloError("Revision not found");
     }
+
+    await addToCommunicationsQueue({
+      email: usersevice?.email ?? "",
+      type: EmailTriggerTypeEnum.servicerevisiondelivery,
+      customer: usersevice?.name ?? "",
+      project: service.projectName,
+    });
+
     await UserModel.findOneAndUpdate(
       {
         "services._id": serviceId,
@@ -946,6 +987,13 @@ class UserService {
       throw new ApolloError("Service not found");
     }
 
+    await addToCommunicationsQueue({
+      email: usersevice?.email ?? "",
+      type: EmailTriggerTypeEnum.serviceaddondelivery,
+      customer: usersevice?.name ?? "",
+      project: service.projectName,
+    });
+
     await UserModel.findOneAndUpdate(
       {
         "services._id": serviceId,
@@ -975,6 +1023,13 @@ class UserService {
     if (!service) {
       throw new ApolloError("Service not found");
     }
+
+    await addToCommunicationsQueue({
+      email: usersevice?.email ?? "",
+      type: EmailTriggerTypeEnum.serviceaddondelivery,
+      customer: usersevice?.name ?? "",
+      project: service.projectName,
+    });
 
     await UserModel.findOneAndUpdate(
       {

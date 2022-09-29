@@ -425,6 +425,40 @@ export const serviceRevisionRequest = async (
   }
 };
 
+export const serviceRevisionDelivery = async (
+  email: string,
+  customer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-revision-delivery-customer",
+    subject: "Service Revision Completed",
+    context: {
+      customer: customer,
+      project: project,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-revision-delivery-admin",
+    subject: "Service Revision Completed",
+    context: {
+      customer: customer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
 export const serviceCompletion = async (
   email: string,
   customer: string,
@@ -460,6 +494,118 @@ export const serviceCompletion = async (
   try {
     await transporter.sendMail(mailOptions);
     await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const addonRequest = async (
+  email: string,
+  customer: string,
+  engineer: string,
+  project: string,
+  service: string,
+  notes: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-addon-request-internal",
+    subject: "Service Add-on Requested",
+    context: {
+      engineer: engineer,
+      customer: customer,
+      service: service,
+      project: project,
+      notes: notes,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-addon-request-admin",
+    subject: "Service Add-on Requested",
+    context: {
+      customer: customer,
+      service: service,
+      project: project,
+      notes: notes,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const addonDelivery = async (
+  email: string,
+  customer: string,
+  project: string
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-addon-delivery-customer",
+    subject: "Service Add-on Delivered",
+    context: {
+      customer: customer,
+      project: project,
+    },
+  };
+
+  const mailOptions1: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-addon-delivery-admin",
+    subject: "Service Add-on Delivered",
+    context: {
+      customer: customer,
+      project: project,
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions1);
+  } catch (error) {
+    console.log("Error in sending mail: " + error);
+  }
+};
+
+export const addOnPurchase = async (
+  email: string,
+  customer: string,
+  service: string,
+  amount: number
+) => {
+  const mailOptions: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    template: "service-addon-purchase-customer",
+    subject: "Add-on Purchased",
+    context: {
+      customer: customer,
+      service: service,
+      amount: amount.toLocaleString("en-IN"),
+    },
+  };
+  const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: MASTER_MAIL,
+    template: "service-addon-purchase-admin",
+    subject: "Add-on Purchased",
+    context: {
+      customer: customer,
+      service: service,
+      amount: amount.toLocaleString("en-IN"),
+    },
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptionsAdmin);
   } catch (error) {
     console.log("Error in sending mail: " + error);
   }
