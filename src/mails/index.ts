@@ -31,6 +31,8 @@ export const hbsOptions: NodemailerExpressHandlebarsOptions = {
 
 transporter.use("compile", hbs(hbsOptions));
 
+const SUBJECT = "Bay Owl Online Studio - ";
+
 export const sendUserVerificationEmail = async ({
   email,
   userId,
@@ -47,7 +49,7 @@ export const sendUserVerificationEmail = async ({
   const mailOptions: SendMailOptions = {
     from: process.env.AUTH_EMAIL,
     to: email,
-    subject: "Verify Your Email!",
+    subject: SUBJECT + "Verify Your Email!",
     html: `<p style="white-space: pre-line;">Click on the link to verify your email id.</p><p>This link will <b>expire in 60 minutes.</b></p><a href='${verificationLink}' target='_blank'>Click Here</a>`,
   };
   try {
@@ -73,7 +75,7 @@ export const sendUserCreateAccountMail = async ({
   const mailOptions: SendMailOptions = {
     from: process.env.AUTH_EMAIL,
     to: email,
-    subject: "Create your account",
+    subject: SUBJECT + "Create your account",
     html: `<a href=${verificationLink}>Click here</a>`,
   };
   try {
@@ -94,7 +96,7 @@ export const sendResetPasswordLink = async (email: string, userId: string) => {
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: email,
-    subject: "Reset Your Password!",
+    subject: SUBJECT + "Reset Your Password!",
     html: `<p style="white-space: pre-line;">Click on the link to reset your password.</p><p>This link will <b>expire in 60 minutes.</b></p><a href='${resetPasswordLink}' target='_blank'>Click Here</a>`,
   };
 
@@ -115,7 +117,7 @@ export const servicePurchaseMail = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-purchase-customer",
-    subject: "Service Purchased",
+    subject: SUBJECT + "Service Purchased",
     context: {
       customer: customer,
       service: service,
@@ -127,7 +129,7 @@ export const servicePurchaseMail = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-purchase-admin",
-    subject: "Service Purchased",
+    subject: SUBJECT + "Service Purchased",
     context: {
       customer: customer,
       service: service,
@@ -153,7 +155,7 @@ export const serviceAssignmentInternal = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-assignment-internal",
-    subject: "Service Assigned",
+    subject: SUBJECT + "Service Assigned",
     context: {
       customer: customer,
       service: service,
@@ -179,10 +181,11 @@ export const serviceReviewAcceptance = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-accepted-customer",
-    subject: "Service Accepted",
+    subject: SUBJECT + "Service Accepted",
     context: {
       customer: customer,
       project: project,
+      service: service,
       website: APP_URL,
     },
   };
@@ -191,7 +194,7 @@ export const serviceReviewAcceptance = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-accepted-admin",
-    subject: "Service Accepted",
+    subject: SUBJECT + "Service Accepted",
     context: {
       customer: customer,
       project: project,
@@ -218,7 +221,7 @@ export const serviceReuploadRequest = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-reupload-requested-customer",
-    subject: "Service Reupload Requested",
+    subject: SUBJECT + "Service Reupload Requested",
     context: {
       customer: customer,
       project: project,
@@ -230,7 +233,7 @@ export const serviceReuploadRequest = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-reupload-requested-admin",
-    subject: "Service Reupload Requested",
+    subject: SUBJECT + "Service Reupload Requested",
     context: {
       customer: customer,
       project: project,
@@ -258,7 +261,7 @@ export const serviceReuploaded = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-file-reupload-internal",
-    subject: "Service Files Reuploaded",
+    subject: SUBJECT + "Service Files Reuploaded",
     context: {
       engineer: engineer,
       customer: customer,
@@ -271,7 +274,7 @@ export const serviceReuploaded = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-file-reupload-admin",
-    subject: "Service Files Reuploaded",
+    subject: SUBJECT + "Service Files Reuploaded",
     context: {
       customer: customer,
       project: project,
@@ -295,7 +298,7 @@ export const serviceQACheck = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-qa-check",
-    subject: "Service QA Check",
+    subject: SUBJECT + "Service QA Check",
     context: {
       engineer: engineer,
       customer: customer,
@@ -321,7 +324,7 @@ export const serviceQAReject = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-qa-rejected",
-    subject: "Service QA Rejection",
+    subject: SUBJECT + "Service QA Rejection",
     context: {
       engineer: engineer,
       customer: customer,
@@ -346,7 +349,7 @@ export const internalRevisionSubmission = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-internal-rework",
-    subject: "Service Internal Submission",
+    subject: SUBJECT + "Service Internal Submission",
     context: {
       engineer: engineer,
       customer: customer,
@@ -369,7 +372,7 @@ export const serviceDelivery = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-delivery",
-    subject: "Service Delivery",
+    subject: SUBJECT + "Service Delivery",
     context: {
       customer: customer,
       project: project,
@@ -394,7 +397,7 @@ export const serviceRevisionRequest = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-revision-request-internal",
-    subject: "Service Revision Requested",
+    subject: SUBJECT + "Service Revision Requested",
     context: {
       engineer: engineer,
       customer: customer,
@@ -408,7 +411,7 @@ export const serviceRevisionRequest = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-revision-request-admin",
-    subject: "Service Revision Requested",
+    subject: SUBJECT + "Service Revision Requested",
     context: {
       engineer: engineer,
       customer: customer,
@@ -434,7 +437,7 @@ export const serviceRevisionDelivery = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-revision-delivery-customer",
-    subject: "Service Revision Completed",
+    subject: SUBJECT + "Service Revision Completed",
     context: {
       customer: customer,
       project: project,
@@ -445,7 +448,7 @@ export const serviceRevisionDelivery = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-revision-delivery-admin",
-    subject: "Service Revision Completed",
+    subject: SUBJECT + "Service Revision Completed",
     context: {
       customer: customer,
       project: project,
@@ -470,7 +473,7 @@ export const serviceCompletion = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-completion-internal",
-    subject: "Service Completed",
+    subject: SUBJECT + "Service Completed",
     context: {
       engineer: engineer,
       customer: customer,
@@ -483,7 +486,7 @@ export const serviceCompletion = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-completion-admin",
-    subject: "Service Completed",
+    subject: SUBJECT + "Service Completed",
     context: {
       engineer: engineer,
       customer: customer,
@@ -511,7 +514,7 @@ export const addonRequest = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-addon-request-internal",
-    subject: "Service Add-on Requested",
+    subject: SUBJECT + "Service Add-on Requested",
     context: {
       engineer: engineer,
       customer: customer,
@@ -525,7 +528,7 @@ export const addonRequest = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-addon-request-admin",
-    subject: "Service Add-on Requested",
+    subject: SUBJECT + "Service Add-on Requested",
     context: {
       customer: customer,
       service: service,
@@ -550,7 +553,7 @@ export const addonDelivery = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-addon-delivery-customer",
-    subject: "Service Add-on Delivered",
+    subject: SUBJECT + "Service Add-on Delivered",
     context: {
       customer: customer,
       project: project,
@@ -561,7 +564,7 @@ export const addonDelivery = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-addon-delivery-admin",
-    subject: "Service Add-on Delivered",
+    subject: SUBJECT + "Service Add-on Delivered",
     context: {
       customer: customer,
       project: project,
@@ -585,7 +588,7 @@ export const addOnPurchase = async (
     from: process.env.AUTH_EMAIL,
     to: email,
     template: "service-addon-purchase-customer",
-    subject: "Add-on Purchased",
+    subject: SUBJECT + "Add-on Purchased",
     context: {
       customer: customer,
       service: service,
@@ -596,7 +599,7 @@ export const addOnPurchase = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "service-addon-purchase-admin",
-    subject: "Add-on Purchased",
+    subject: SUBJECT + "Add-on Purchased",
     context: {
       customer: customer,
       service: service,
@@ -621,7 +624,7 @@ export const sendEnquiryMail = async (
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
     template: "contact-enquiry",
-    subject: "New Contact Form Enquiry",
+    subject: SUBJECT + "New Contact Form Enquiry",
     context: {
       email: email,
       phone: phone,

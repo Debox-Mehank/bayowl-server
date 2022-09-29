@@ -739,7 +739,7 @@ class UserService {
   async markCompleted(serviceId: string, completedFor: number) {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
-    }).select("services");
+    }).select("services name");
     const service = usersevice?.services?.find(
       (el) => String(el._id) === serviceId
     );
@@ -796,7 +796,7 @@ class UserService {
   ) {
     const usersevice = await UserModel.findOne({
       "services._id": serviceId,
-    }).select("services");
+    }).select("services name");
 
     const service = usersevice?.services?.find(
       (el) => String(el._id) === serviceId

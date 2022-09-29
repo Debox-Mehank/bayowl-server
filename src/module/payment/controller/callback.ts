@@ -180,7 +180,7 @@ export const paymentCallbackHandlerAddonMultitrack = async (
 
     const usersevice = await UserModel.findOne({
       "services._id": pm?.userServiceId,
-    }).select("name");
+    }).select("services name");
 
     const service = usersevice?.services?.find(
       (el) => String(el._id) === pm?.userServiceId
@@ -270,7 +270,7 @@ export const paymentCallbackHandlerAddonStems = async (
 
     const usersevice = await UserModel.findOne({
       "services._id": pm?.userServiceId,
-    }).select("name");
+    }).select("services name");
 
     const service = usersevice?.services?.find(
       (el) => String(el._id) === pm?.userServiceId
@@ -360,7 +360,7 @@ export const paymentCallbackHandlerAddonBoth = async (
 
     const usersevice = await UserModel.findOne({
       "services._id": pm?.userServiceId,
-    }).select("name");
+    }).select("services name");
 
     const service = usersevice?.services?.find(
       (el) => String(el._id) === pm?.userServiceId
@@ -455,7 +455,7 @@ export const paymentCallbackHandlerAddonRevision = async (
 
     const usersevice = await UserModel.findOne({
       "services._id": pm?.userServiceId,
-    }).select("name");
+    }).select("services name");
 
     const service = usersevice?.services?.find(
       (el) => String(el._id) === pm?.userServiceId
