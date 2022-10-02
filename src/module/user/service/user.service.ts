@@ -1141,6 +1141,7 @@ class UserService {
     const multipartParams: CreateMultipartUploadRequest = {
       Bucket: bucketName,
       Key: fileName,
+      Metadata: { "Content-Type": "application/zip" },
       // ACL: "public-read",
     };
     const multipartUpload = await s3
