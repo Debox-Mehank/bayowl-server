@@ -9,6 +9,7 @@ import { signJwt } from "../utils/auth";
 
 // const MANAGEMENT_MAIL = process.env.MANAGEMENT_MAIL;
 const MASTER_MAIL = process.env.MASTER_MAIL;
+const MANAGER_MAIL = process.env.MANAGER_MAIL;
 const APP_URL = process.env.APP_URL;
 
 export const transporter: HbsTransporter = nodemailer.createTransport({
@@ -128,6 +129,7 @@ export const servicePurchaseMail = async (
   const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-purchase-admin",
     subject: SUBJECT + "Service Purchased",
     context: {
@@ -193,6 +195,7 @@ export const serviceReviewAcceptance = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-accepted-admin",
     subject: SUBJECT + "Service Accepted",
     context: {
@@ -232,6 +235,7 @@ export const serviceReuploadRequest = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-reupload-requested-admin",
     subject: SUBJECT + "Service Reupload Requested",
     context: {
@@ -273,6 +277,7 @@ export const serviceReuploaded = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-file-reupload-admin",
     subject: SUBJECT + "Service Files Reuploaded",
     context: {
@@ -297,6 +302,7 @@ export const serviceQACheck = async (
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-qa-check",
     subject: SUBJECT + "Service QA Check",
     context: {
@@ -348,6 +354,7 @@ export const internalRevisionSubmission = async (
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-internal-rework",
     subject: SUBJECT + "Service Internal Submission",
     context: {
@@ -410,6 +417,7 @@ export const serviceRevisionRequest = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-revision-request-admin",
     subject: SUBJECT + "Service Revision Requested",
     context: {
@@ -447,6 +455,7 @@ export const serviceRevisionDelivery = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-revision-delivery-admin",
     subject: SUBJECT + "Service Revision Completed",
     context: {
@@ -485,6 +494,7 @@ export const serviceCompletion = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-completion-admin",
     subject: SUBJECT + "Service Completed",
     context: {
@@ -527,6 +537,7 @@ export const addonRequest = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-addon-request-admin",
     subject: SUBJECT + "Service Add-on Requested",
     context: {
@@ -563,6 +574,7 @@ export const addonDelivery = async (
   const mailOptions1: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-addon-delivery-admin",
     subject: SUBJECT + "Service Add-on Delivered",
     context: {
@@ -598,6 +610,7 @@ export const addOnPurchase = async (
   const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "service-addon-purchase-admin",
     subject: SUBJECT + "Add-on Purchased",
     context: {
@@ -623,6 +636,7 @@ export const sendEnquiryMail = async (
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: MASTER_MAIL,
+    cc: MANAGER_MAIL,
     template: "contact-enquiry",
     subject: SUBJECT + "New Contact Form Enquiry",
     context: {
