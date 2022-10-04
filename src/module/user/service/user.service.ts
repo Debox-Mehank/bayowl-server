@@ -1300,8 +1300,10 @@ class UserService {
         },
       },
       {
+        $addToSet: {
+          "services.$.uploadedFiles": uplodedFiles[0],
+        },
         $set: {
-          "services.$.uploadedFiles": uplodedFiles,
           "services.$.referenceFiles": referenceUploadedFiles ?? [],
           "services.$.statusType": UserServiceStatus.underreview,
           "services.$.status": [

@@ -7,7 +7,6 @@ import hbs, {
 import path from "path";
 import { signJwt } from "../utils/auth";
 
-// const MANAGEMENT_MAIL = process.env.MANAGEMENT_MAIL;
 const MASTER_MAIL = process.env.MASTER_MAIL;
 const MANAGER_MAIL = process.env.MANAGER_MAIL;
 const APP_URL = process.env.APP_URL;
