@@ -4,6 +4,7 @@ import crypto from "crypto";
 import Razorpay from "razorpay";
 import Context from "../../../interface/context";
 import { sendUserVerificationEmail, servicePurchaseMail } from "../../../mails";
+import { GST_VAL } from "../../../utils/gst";
 import { getUserEmail } from "../../user/helper";
 import {
   defaultStatus,
@@ -96,10 +97,14 @@ class PaymentService {
 
         return "free service";
       }
+      // GET GST VAL
+      const gst = await GST_VAL();
+      const amt = service.price;
+      const gstAmt = amt + (amt * gst) / 100;
 
       // Create order options
       const options = {
-        amount: service.price * 100,
+        amount: gst === 0 ? amt * 100 : gstAmt * 100,
         currency: "INR",
         receipt: crypto.randomBytes(10).toString("hex"),
       };
@@ -117,6 +122,7 @@ class PaymentService {
             $addToSet: {
               services: {
                 ...finalService,
+                price: gst === 0 ? amt : gstAmt,
                 status: [
                   {
                     name: UserServiceStatus.pendingupload,
@@ -157,7 +163,7 @@ class PaymentService {
         await PaymentModel.create({
           email: email?.email,
           userServiceId: finalService._id,
-          amount: finalService.price,
+          amount: gst === 0 ? amt : gstAmt,
           status: "created",
           orderId: order.id,
         });
@@ -212,9 +218,14 @@ class PaymentService {
       // get email
       const email = await getUserEmail(ctx.user);
 
+      // GET GST VAL
+      const gst = await GST_VAL();
+      const amt = amount;
+      const gstAmt = amt + (amt * gst) / 100;
+
       // Create order options
       const options = {
-        amount: amount * 100,
+        amount: gst === 0 ? amt * 100 : gstAmt * 100,
         currency: "INR",
         receipt: crypto.randomBytes(10).toString("hex"),
       };
@@ -227,7 +238,7 @@ class PaymentService {
         await PaymentModel.create({
           email: email?.email,
           userServiceId: serviceId,
-          amount: amount,
+          amount: gst === 0 ? amt : gstAmt,
           status: "created",
           orderId: order.id,
         });

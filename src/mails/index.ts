@@ -6,6 +6,7 @@ import hbs, {
 } from "nodemailer-express-handlebars";
 import path from "path";
 import { signJwt } from "../utils/auth";
+import { GST_VAL } from "../utils/gst";
 
 const MASTER_MAIL = process.env.MASTER_MAIL;
 const MANAGER_MAIL = process.env.MANAGER_MAIL;
@@ -113,6 +114,8 @@ export const servicePurchaseMail = async (
   service: string,
   amount: number
 ) => {
+  const gst = await GST_VAL();
+
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: email,
@@ -123,6 +126,7 @@ export const servicePurchaseMail = async (
       service: service,
       amount: amount.toLocaleString("en-IN"),
       website: APP_URL,
+      gst: gst,
     },
   };
   const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
@@ -135,6 +139,7 @@ export const servicePurchaseMail = async (
       customer: customer,
       service: service,
       amount: amount.toLocaleString("en-IN"),
+      gst: gst,
     },
   };
   try {
@@ -201,6 +206,7 @@ export const serviceReviewAcceptance = async (
       customer: customer,
       project: project,
       engineer: engineer,
+      service: service,
     },
   };
   try {
@@ -595,6 +601,8 @@ export const addOnPurchase = async (
   service: string,
   amount: number
 ) => {
+  const gst = await GST_VAL();
+
   const mailOptions: SendMailOptions | TemplateOptions = {
     from: process.env.AUTH_EMAIL,
     to: email,
@@ -604,6 +612,7 @@ export const addOnPurchase = async (
       customer: customer,
       service: service,
       amount: amount.toLocaleString("en-IN"),
+      gst: gst,
     },
   };
   const mailOptionsAdmin: SendMailOptions | TemplateOptions = {
@@ -616,6 +625,7 @@ export const addOnPurchase = async (
       customer: customer,
       service: service,
       amount: amount.toLocaleString("en-IN"),
+      gst: gst,
     },
   };
   try {
