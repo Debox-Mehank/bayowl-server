@@ -28,6 +28,7 @@ const accessKeySecret = process.env.AWS_ACCESS_KEY_SECRET;
 
 class ServicesService {
   async addService(input: ServicesInput[]): Promise<boolean> {
+    await ServicesModel.deleteMany({});
     await ServicesModel.insertMany(input);
     return true;
   }
