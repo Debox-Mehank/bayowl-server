@@ -31,13 +31,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
       "https://www.bayowl.studio",
-      "https://main.d3nsdx0ho3r810.amplifyapp.com/",
       "https://bayowl.studio",
       "https://admin.bayowl.studio",
+      "https://www.bayowlstudios.com",
+      "https://bayowlstudios.com",
     ],
     credentials: true,
   })
