@@ -32,7 +32,7 @@ export const hbsOptions: NodemailerExpressHandlebarsOptions = {
 
 transporter.use("compile", hbs(hbsOptions));
 
-const SUBJECT = "Bay Owl Online Studio - ";
+const SUBJECT = "Bay Owl Studios - ";
 
 export const sendUserVerificationEmail = async ({
   email,
